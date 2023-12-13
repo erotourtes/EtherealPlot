@@ -1,5 +1,6 @@
 package com.github.erotourtes.utils
 
+import java.lang.IllegalStateException
 import kotlin.math.*
 
 class MathParser(expression: String) {
@@ -21,7 +22,7 @@ class MathParser(expression: String) {
 
     private val brackets = listOf("(", ")")
 
-    val rpn = toRPN(expression)
+    val rpn = toRpnOrEmpty(expression)
 
     private val variables = mutableMapOf("x" to 0.0)
 
@@ -30,6 +31,16 @@ class MathParser(expression: String) {
     }
 
     fun eval(): Double {
+        if (rpn.isEmpty()) throw IllegalStateException("Invalid expression")
+        try {
+            return _eval()
+        } catch (e: NoSuchElementException) {
+            throw IllegalStateException("Invalid expression")
+        }
+    }
+
+    @Throws(NoSuchElementException::class)
+    private fun _eval(): Double {
         val stack = mutableListOf<Double>()
         for (token in rpn) {
             when (token) {
@@ -51,10 +62,15 @@ class MathParser(expression: String) {
         return stack.removeLast()
     }
 
+    private fun toRpnOrEmpty(exp: String): List<String> = runCatching {
+        toRPN(exp)
+    }.getOrDefault(emptyList())
+
     /**
      * Reverse Polish Notation
      * https://en.wikipedia.org/wiki/Reverse_Polish_notation
      * */
+    @Throws(NoSuchElementException::class)
     private fun toRPN(exp: String): List<String> {
         val tokens = tokenize(exp)
 
