@@ -6,8 +6,11 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import android.util.Log
+import android.view.ScaleGestureDetector
+import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
 import androidx.core.graphics.*
+
+const val PIXELS_PER_UNIT = 100
 
 fun Canvas.drawTextInRightDirection(text: String, x: Float, y: Float, paint: Paint) {
     withSave {
@@ -18,6 +21,7 @@ fun Canvas.drawTextInRightDirection(text: String, x: Float, y: Float, paint: Pai
     }
 }
 
+@SuppressLint("ClickableViewAccessibility")
 class DrawableView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
@@ -32,8 +36,19 @@ class DrawableView @JvmOverloads constructor(
         textSize = 50f
     }
 
+    private val scaleGestureDetector = initScaleGestureDetector(context)
+
     init {
-        updateCameraMatrixByTouch()
+        initScaleGestureDetector(context)
+    }
+
+    init {
+        val listeners = listOf(translateCameraListener(), scaleCameraListener())
+
+        setOnTouchListener { _, event ->
+            listeners.forEach { it.onTouch(this, event) }
+            true
+        }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -67,37 +82,36 @@ class DrawableView @JvmOverloads constructor(
 
     private fun drawMarksOnAxis(canvas: Canvas) {
         val (left, top, right, bottom) = canvas.clipBounds
-        val marksScale = 100
+        val marksScale = 1 * PIXELS_PER_UNIT
         val markHalfH = 15f
+        val textOffsetMultiplier = 3
 
         for (i in (left - left % marksScale)..right step marksScale) {
             if (i == 0) continue
             val iF = i.toFloat()
             canvas.drawLine(iF, -markHalfH, iF, markHalfH, paint)
-            canvas.drawTextInRightDirection(i.toString(), iF, -markHalfH * 2, paint)
+            canvas.drawTextInRightDirection(
+                (i / PIXELS_PER_UNIT).toString(), iF, -markHalfH * textOffsetMultiplier, paint
+            )
         }
 
         for (i in (top - top % marksScale)..bottom step marksScale) {
             if (i == 0) continue
             val iF = i.toFloat()
             canvas.drawLine(-markHalfH, iF, markHalfH, iF, paint)
-            canvas.drawTextInRightDirection(i.toString(), markHalfH * 2, iF, paint)
+            canvas.drawTextInRightDirection(
+                (i / PIXELS_PER_UNIT).toString(), markHalfH * textOffsetMultiplier, iF, paint
+            )
         }
     }
 
-
-    @SuppressLint("ClickableViewAccessibility")
-    private fun updateCameraMatrixByTouch() {
+    private fun translateCameraListener(): OnTouchListener {
         var startPoint = PointF(0f, 0f)
         var endPoint: PointF
 
-        setOnTouchListener { _, event ->
+        return OnTouchListener { _, event ->
             when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    startPoint = PointF(event.x, event.y)
-                    Log.i("DrawableView", "startPoint: $startPoint")
-                }
-
+                MotionEvent.ACTION_DOWN -> startPoint = PointF(event.x, event.y)
                 MotionEvent.ACTION_MOVE -> {
                     endPoint = PointF(event.x, event.y)
                     val dx = endPoint.x - startPoint.x
@@ -112,4 +126,19 @@ class DrawableView @JvmOverloads constructor(
             true
         }
     }
+
+    private fun scaleCameraListener(): OnTouchListener = OnTouchListener { _, event ->
+        scaleGestureDetector.onTouchEvent(event)
+        true
+    }
+
+    private fun initScaleGestureDetector(context: Context): ScaleGestureDetector =
+        ScaleGestureDetector(context, object : SimpleOnScaleGestureListener() {
+            override fun onScale(detector: ScaleGestureDetector): Boolean {
+                val scaleFactor = detector.scaleFactor
+                matrixCamera.postScale(scaleFactor, scaleFactor, detector.focusX, detector.focusY)
+                invalidate()
+                return true
+            }
+        })
 }
