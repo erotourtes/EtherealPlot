@@ -1,49 +1,28 @@
 package com.github.erotourtes.drawing
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
+import android.graphics.*
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.util.Log
+import androidx.core.graphics.*
 
-data class Point(val x: Float, val y: Float) {
-    companion object {
-        fun cartesianToCanvas(cartesian: Point, canvas: Canvas): Point =
-            Point(cartesian.x, canvas.height - cartesian.y)
+fun Canvas.drawTextInRightDirection(text: String, x: Float, y: Float, paint: Paint) {
+    withSave {
+        val textBoundaries = Rect().apply { paint.getTextBounds(text, 0, text.length, this) }
+        translate(x - textBoundaries.width() / 2, y - textBoundaries.height() / 2)
+        scale(1f, -1f)
+        drawText(text, 0f, 0f, paint)
     }
 }
 
-fun Canvas.cartesianDrawLine(start: Point, end: Point, paint: Paint) {
-    val c1 = Point.cartesianToCanvas(start, this)
-    val c2 = Point.cartesianToCanvas(end, this)
-
-    drawLine(c1.x, c1.y, c2.x, c2.y, paint)
-}
-
-fun Canvas.cartesianDrawText(text: String, point: Point, paint: Paint) {
-    val c = Point.cartesianToCanvas(point, this)
-    drawText(text, c.x, c.y, paint)
-}
-
 class DrawableView @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null, defStyleAttr: Int = 0
+    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
-
-    var userCoords: Point? = null
-        set(value) {
-            field = value
-            invalidate()
-        }
-
-    var scale = 1f
-        set(value) {
-            field = value
-            invalidate()
-        }
+    private val matrixCamera = Matrix()
+    private val matrixCartesian = Matrix()
 
     private val paint = Paint().apply {
         isAntiAlias = true
@@ -53,61 +32,84 @@ class DrawableView @JvmOverloads constructor(
         textSize = 50f
     }
 
-    private val gridPaint = Paint().apply {
-        color = Color.GRAY
-        strokeWidth = 1f
+    init {
+        updateCameraMatrixByTouch()
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        matrixCartesian.apply {
+            postScale(1f, -1f) // invert Y axis
+            postTranslate(w / 2f, h / 2f) // center the origin
+        }
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        drawAxis(canvas)
-        grid(canvas, gridPaint)
-        drawFunction(canvas)
-        userCoords?.let {
-            canvas.drawCircle(it.x, it.y, 50f, paint)
-        }
-    }
 
-    override fun onTouchEvent(event: MotionEvent): Boolean {
-        userCoords = Point(event.x, event.y)
-        Log.i("DrawableView", "User touched at $userCoords")
-        return true
+        canvas.withSave {
+            concat(matrixCamera)
+            concat(matrixCartesian)
+
+//            drawCircle(0f, 0f, 100f, paint)
+//            drawLine(0f, 0f, 100f, 100f, paint)
+            drawAxis(this)
+        }
     }
 
     private fun drawAxis(canvas: Canvas) {
-        canvas.cartesianDrawLine(Point(0f, 0f), Point(0f, height.toFloat()), paint)
-        canvas.cartesianDrawLine(Point(0f, 0f), Point(width.toFloat(), 0f), paint)
+        val (left, top, right, bottom) = canvas.clipBounds
 
-        val step = scale * 100
-        val xOffset = 50f
-        val yOffset = 50f
-        for (i in 0..width step step.toInt()) {
-            canvas.cartesianDrawText(i.toString(), Point(i.toFloat(), yOffset), paint)
+        canvas.drawLine(left.toFloat(), 0f, right.toFloat(), 0f, paint)
+        canvas.drawLine(0f, top.toFloat(), 0f, bottom.toFloat(), paint)
+
+        drawMarksOnAxis(canvas)
+    }
+
+    private fun drawMarksOnAxis(canvas: Canvas) {
+        val (left, top, right, bottom) = canvas.clipBounds
+        val marksScale = 100
+        val markHalfH = 15f
+
+        for (i in (left - left % marksScale)..right step marksScale) {
+            if (i == 0) continue
+            val iF = i.toFloat()
+            canvas.drawLine(iF, -markHalfH, iF, markHalfH, paint)
+            canvas.drawTextInRightDirection(i.toString(), iF, -markHalfH * 2, paint)
         }
 
-        for (i in 0..height step step.toInt()) {
-            canvas.cartesianDrawText(i.toString(), Point(xOffset, i.toFloat()), paint)
+        for (i in (top - top % marksScale)..bottom step marksScale) {
+            if (i == 0) continue
+            val iF = i.toFloat()
+            canvas.drawLine(-markHalfH, iF, markHalfH, iF, paint)
+            canvas.drawTextInRightDirection(i.toString(), markHalfH * 2, iF, paint)
         }
     }
 
-    private fun grid(canvas: Canvas, paint: Paint) {
-        val step = scale * 100
-        for (i in 0..width step step.toInt()) {
-            canvas.cartesianDrawLine(Point(i.toFloat(), 0f), Point(i.toFloat(), height.toFloat()), paint)
-        }
-        for (i in 0..height step step.toInt()) {
-            canvas.cartesianDrawLine(Point(0f, i.toFloat()), Point(width.toFloat(), i.toFloat()), paint)
-        }
-    }
 
-    private fun linear(x: Float): Float = 2 * x + 1
+    @SuppressLint("ClickableViewAccessibility")
+    private fun updateCameraMatrixByTouch() {
+        var startPoint = PointF(0f, 0f)
+        var endPoint: PointF
 
-    private fun drawFunction(canvas: Canvas) {
-        val step = scale * 100
-        for (i in 0..width step step.toInt()) {
-            val x = i.toFloat()
-            val y = linear(x)
-            canvas.cartesianDrawLine(Point(0f, 0f), Point(x, y), paint)
+        setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    startPoint = PointF(event.x, event.y)
+                    Log.i("DrawableView", "startPoint: $startPoint")
+                }
+
+                MotionEvent.ACTION_MOVE -> {
+                    endPoint = PointF(event.x, event.y)
+                    val dx = endPoint.x - startPoint.x
+                    val dy = endPoint.y - startPoint.y
+                    matrixCamera.postTranslate(dx, dy)
+                    // update start point for next move if not updated then the camera will apply wrong dx, dy (it would accumulate)
+                    startPoint.set(endPoint)
+                    invalidate()
+                }
+            }
+
+            true
         }
     }
 }
