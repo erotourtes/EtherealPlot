@@ -126,10 +126,11 @@ class DrawableView @JvmOverloads constructor(
         val gridStep = 1 * PIXELS_PER_UNIT
 
         val gridScale = gridStep * curStepMultiplier
+        val mainEvery = 5
 
         var x = left - left % gridScale + gridScale
         while (x < right) {
-            val isMain = x.absoluteValue % (gridScale * 5) == 0f
+            val isMain = x.absoluteValue % (gridScale * mainEvery) == 0f
             paint.forGrid(isMain) {
                 canvas.drawLine(x, top.toFloat(), x, bottom.toFloat(), this)
                 if (isMain) writeTextXAxis(x)
@@ -139,7 +140,7 @@ class DrawableView @JvmOverloads constructor(
 
         var y = top - top % gridScale + gridScale
         while (y < bottom) {
-            val isMain = y.absoluteValue % (gridScale * 5) == 0f
+            val isMain = y.absoluteValue % (gridScale * mainEvery) == 0f
             paint.forGrid(isMain) {
                 canvas.drawLine(left.toFloat(), y, right.toFloat(), y, this)
                 if (isMain) writeTextYAxis(y)
@@ -154,14 +155,15 @@ class DrawableView @JvmOverloads constructor(
         val prevOrigWidth = gridScale * prevScaleFactor
         val curOrigWidth = gridScale * scaleFactor
         val isZoomedIn = prevScaleFactor < scaleFactor
+        val largerTimes = 2
 
-        if (isZoomedIn && prevOrigWidth * 2 < curOrigWidth) {
-            curStepMultiplier /= 2
+        if (isZoomedIn && prevOrigWidth * largerTimes < curOrigWidth) {
+            curStepMultiplier /= largerTimes
             prevScaleFactor = scaleFactor
         }
 
-        if (!isZoomedIn && prevOrigWidth / 2 > curOrigWidth) {
-            curStepMultiplier *= 2
+        if (!isZoomedIn && prevOrigWidth / largerTimes > curOrigWidth) {
+            curStepMultiplier *= largerTimes
             prevScaleFactor = scaleFactor
         }
     }
