@@ -5,10 +5,13 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.MotionEvent
-import android.view.View
 import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
+import android.view.View
+import android.view.View.OnTouchListener
 import androidx.core.graphics.*
+import kotlin.math.absoluteValue
+
 
 const val PIXELS_PER_UNIT = 100
 
@@ -70,8 +73,56 @@ class DrawableView @JvmOverloads constructor(
 
 //            drawCircle(0f, 0f, 100f, paint)
 //            drawLine(0f, 0f, 100f, 100f, paint)
+            drawGrid(this)
             drawAxis(this)
         }
+    }
+
+    private fun drawGrid(canvas: Canvas) {
+        val (left, top, right, bottom) = canvas.clipBounds
+        val baseGridScale = 1 * PIXELS_PER_UNIT
+
+        for (i in (left - left % baseGridScale)..right step baseGridScale) {
+            val isMain = i.absoluteValue % (baseGridScale * 5) == 0
+            paint.forGrid(isMain) {
+                canvas.drawLine(i.toFloat(), top.toFloat(), i.toFloat(), bottom.toFloat(), this)
+                if (isMain) writeTextXAxis(canvas, i)
+            }
+        }
+
+        for (i in (top - top % baseGridScale)..bottom step baseGridScale) {
+            val isMain = i.absoluteValue % (baseGridScale * 5) == 0
+            paint.forGrid(isMain) {
+                canvas.drawLine(left.toFloat(), i.toFloat(), right.toFloat(), i.toFloat(), this)
+                if (isMain) writeTextYAxis(canvas, i)
+            }
+        }
+    }
+
+    private fun writeTextXAxis(canvas: Canvas, curX: Int) {
+        val text = (curX / PIXELS_PER_UNIT).toString()
+        val textBound = Rect().apply { paint.getTextBounds(text, 0, text.length, this) }
+        val textX = curX.toFloat() - textBound.width()
+        val textY = -textBound.height().toFloat()
+        canvas.drawTextInRightDirection(text, textX, textY, paint)
+    }
+
+    private fun writeTextYAxis(canvas: Canvas, curY: Int) {
+        if (curY == 0) return
+        val text = (curY / PIXELS_PER_UNIT).toString()
+        val textBound = Rect().apply { paint.getTextBounds(text, 0, text.length, this) }
+        val textX = -textBound.width().toFloat()
+        val textY = curY.toFloat() + textBound.height()
+        canvas.drawTextInRightDirection(text, textX, textY, paint)
+    }
+
+    private fun Paint.forGrid(isMain: Boolean, block: Paint.() -> Unit) {
+        val oldStrokeWidth = this.strokeWidth
+        val oldColor = this.color
+        this.strokeWidth /= if (isMain) 2f else 4f
+        block()
+        this.strokeWidth = oldStrokeWidth
+        this.color = oldColor
     }
 
     private fun drawAxis(canvas: Canvas) {
