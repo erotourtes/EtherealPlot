@@ -4,13 +4,13 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
 import android.view.View
 import android.view.View.OnTouchListener
 import androidx.core.graphics.*
+import com.github.erotourtes.utils.MathParser
 import kotlin.math.absoluteValue
 
 
@@ -36,6 +36,12 @@ class DrawableView @JvmOverloads constructor(
 
     private var curStepMultiplier = 1f
     private var prevScaleFactor = 1f
+
+    private var fns = listOf(
+        MathParser("x"),
+        MathParser("x^2"),
+        MathParser("x^3"),
+    )
 
     private val paint = Paint().apply {
         isAntiAlias = true
@@ -75,10 +81,40 @@ class DrawableView @JvmOverloads constructor(
             concat(matrixCartesian)
             scale(scaleFactor, scaleFactor)
 
-//            drawCircle(0f, 0f, 100f, paint)
-//            drawLine(0f, 0f, 100f, 100f, paint)
+            drawFns(this)
             drawGrid(this)
             drawAxis(this)
+        }
+    }
+
+    private fun drawFns(canvas: Canvas) {
+        fns.forEach { drawFn(canvas, it) }
+    }
+
+    private fun drawFn(canvas: Canvas, fn: MathParser) {
+        val (left, _, right, _) = canvas.clipBounds
+
+        val step = 1f * curStepMultiplier
+        var xCur = left.toDouble()
+        val xEnd = right.toDouble()
+
+        while (xCur < xEnd) {
+            val xNext = xCur + step
+
+            fn.setVariable("x", xCur / PIXELS_PER_UNIT)
+            val yCur = fn.eval()
+            fn.setVariable("x", xNext / PIXELS_PER_UNIT)
+            val yNext = fn.eval()
+
+            canvas.drawLine(
+                xCur.toFloat(),
+                yCur.toFloat(),
+                xNext.toFloat(),
+                yNext.toFloat(),
+                paint
+            )
+
+            xCur = xNext
         }
     }
 
