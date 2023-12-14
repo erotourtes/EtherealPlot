@@ -28,6 +28,8 @@ class DrawableView @JvmOverloads constructor(
     private val matrixCamera = Matrix()
     private val matrixCartesian = Matrix()
 
+    private var scaleFactor = 1f
+
     private val paint = Paint().apply {
         isAntiAlias = true
         color = Color.RED
@@ -64,6 +66,7 @@ class DrawableView @JvmOverloads constructor(
         canvas.withSave {
             concat(matrixCamera)
             concat(matrixCartesian)
+            scale(scaleFactor, scaleFactor)
 
 //            drawCircle(0f, 0f, 100f, paint)
 //            drawLine(0f, 0f, 100f, 100f, paint)
@@ -76,8 +79,6 @@ class DrawableView @JvmOverloads constructor(
 
         canvas.drawLine(left.toFloat(), 0f, right.toFloat(), 0f, paint)
         canvas.drawLine(0f, top.toFloat(), 0f, bottom.toFloat(), paint)
-
-        drawMarksOnAxis(canvas)
     }
 
     private fun drawMarksOnAxis(canvas: Canvas) {
@@ -136,9 +137,17 @@ class DrawableView @JvmOverloads constructor(
         ScaleGestureDetector(context, object : SimpleOnScaleGestureListener() {
             override fun onScale(detector: ScaleGestureDetector): Boolean {
                 val scaleFactor = detector.scaleFactor
-                matrixCamera.postScale(scaleFactor, scaleFactor, detector.focusX, detector.focusY)
+//                matrixCamera.postScale(scaleFactor, scaleFactor, detector.focusX, detector.focusY)
+                updateScaleFactor(scaleFactor)
                 invalidate()
                 return true
             }
         })
+
+    private fun updateScaleFactor(scaleFactor: Float) {
+        this.scaleFactor *= scaleFactor
+        paint.textSize /= scaleFactor
+        paint.strokeWidth /= scaleFactor
+        invalidate()
+    }
 }
