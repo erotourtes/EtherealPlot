@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
@@ -32,6 +33,9 @@ class DrawableView @JvmOverloads constructor(
     private val matrixCartesian = Matrix()
 
     private var scaleFactor = 1f
+
+    private var curStepMultiplier = 1f
+    private var prevScaleFactor = 1f
 
     private val paint = Paint().apply {
         isAntiAlias = true
@@ -79,40 +83,79 @@ class DrawableView @JvmOverloads constructor(
     }
 
     private fun drawGrid(canvas: Canvas) {
-        val (left, top, right, bottom) = canvas.clipBounds
-        val baseGridScale = 1 * PIXELS_PER_UNIT
+        recalculateGridStep()
 
-        for (i in (left - left % baseGridScale)..right step baseGridScale) {
-            val isMain = i.absoluteValue % (baseGridScale * 5) == 0
+        val (left, top, right, bottom) = canvas.clipBounds
+        val gridStep = 1 * PIXELS_PER_UNIT
+
+        val gridScale = gridStep * curStepMultiplier
+
+        var x = left - left % gridScale + gridScale
+        while (x < right) {
+            val isMain = x.absoluteValue % (gridScale * 5) == 0f
             paint.forGrid(isMain) {
-                canvas.drawLine(i.toFloat(), top.toFloat(), i.toFloat(), bottom.toFloat(), this)
-                if (isMain) writeTextXAxis(canvas, i)
+                canvas.drawLine(x, top.toFloat(), x, bottom.toFloat(), this)
+                if (isMain) writeTextXAxis(canvas, x)
             }
+            x += gridScale
         }
 
-        for (i in (top - top % baseGridScale)..bottom step baseGridScale) {
-            val isMain = i.absoluteValue % (baseGridScale * 5) == 0
+        var y = top - top % gridScale + gridScale
+        while (y < bottom) {
+            val isMain = y.absoluteValue % (gridScale * 5) == 0f
             paint.forGrid(isMain) {
-                canvas.drawLine(left.toFloat(), i.toFloat(), right.toFloat(), i.toFloat(), this)
-                if (isMain) writeTextYAxis(canvas, i)
+                canvas.drawLine(left.toFloat(), y, right.toFloat(), y, this)
+                if (isMain) writeTextYAxis(canvas, y)
             }
+            y += gridScale
         }
     }
 
-    private fun writeTextXAxis(canvas: Canvas, curX: Int) {
-        val text = (curX / PIXELS_PER_UNIT).toString()
+    private fun recalculateGridStep() {
+        val gridScale = 1 * PIXELS_PER_UNIT * curStepMultiplier
+
+        val prevOrigWidth = gridScale * prevScaleFactor
+        val curOrigWidth = gridScale * scaleFactor
+        val isZoomedIn = prevScaleFactor < scaleFactor
+
+        if (isZoomedIn && prevOrigWidth * 2 < curOrigWidth) {
+            curStepMultiplier /= 2
+            prevScaleFactor = scaleFactor
+        }
+
+        if (!isZoomedIn && prevOrigWidth / 2 > curOrigWidth) {
+            curStepMultiplier *= 2
+            prevScaleFactor = scaleFactor
+        }
+    }
+
+    private fun formatFloatTextForAxis(text: String): String {
+        // if is integer then remove .0
+        val isInteger = text.endsWith(".0")
+        if (isInteger) return text.substring(0, text.length - 2)
+
+        // if is float with 2 digits leave it
+        val digitsAfterDot = text.substringAfter(".").length
+        if (digitsAfterDot == 2) return text
+
+        // if is float with more than 2 digits write it in scientific notation
+        return text.toDouble().toBigDecimal().toEngineeringString()
+    }
+
+    private fun writeTextXAxis(canvas: Canvas, curX: Float) {
+        val text = formatFloatTextForAxis((curX / PIXELS_PER_UNIT).toString())
         val textBound = Rect().apply { paint.getTextBounds(text, 0, text.length, this) }
-        val textX = curX.toFloat() - textBound.width()
+        val textX = curX - textBound.width()
         val textY = -textBound.height().toFloat()
         canvas.drawTextInRightDirection(text, textX, textY, paint)
     }
 
-    private fun writeTextYAxis(canvas: Canvas, curY: Int) {
-        if (curY == 0) return
-        val text = (curY / PIXELS_PER_UNIT).toString()
+    private fun writeTextYAxis(canvas: Canvas, curY: Float) {
+        if (curY == 0f) return
+        val text = formatFloatTextForAxis((curY / PIXELS_PER_UNIT).toString())
         val textBound = Rect().apply { paint.getTextBounds(text, 0, text.length, this) }
         val textX = -textBound.width().toFloat()
-        val textY = curY.toFloat() + textBound.height()
+        val textY = curY + textBound.height()
         canvas.drawTextInRightDirection(text, textX, textY, paint)
     }
 
@@ -130,31 +173,6 @@ class DrawableView @JvmOverloads constructor(
 
         canvas.drawLine(left.toFloat(), 0f, right.toFloat(), 0f, paint)
         canvas.drawLine(0f, top.toFloat(), 0f, bottom.toFloat(), paint)
-    }
-
-    private fun drawMarksOnAxis(canvas: Canvas) {
-        val (left, top, right, bottom) = canvas.clipBounds
-        val marksScale = 1 * PIXELS_PER_UNIT
-        val markHalfH = 15f
-        val textOffsetMultiplier = 3
-
-        for (i in (left - left % marksScale)..right step marksScale) {
-            if (i == 0) continue
-            val iF = i.toFloat()
-            canvas.drawLine(iF, -markHalfH, iF, markHalfH, paint)
-            canvas.drawTextInRightDirection(
-                (i / PIXELS_PER_UNIT).toString(), iF, -markHalfH * textOffsetMultiplier, paint
-            )
-        }
-
-        for (i in (top - top % marksScale)..bottom step marksScale) {
-            if (i == 0) continue
-            val iF = i.toFloat()
-            canvas.drawLine(-markHalfH, iF, markHalfH, iF, paint)
-            canvas.drawTextInRightDirection(
-                (i / PIXELS_PER_UNIT).toString(), markHalfH * textOffsetMultiplier, iF, paint
-            )
-        }
     }
 
     private fun translateCameraListener(): OnTouchListener {
