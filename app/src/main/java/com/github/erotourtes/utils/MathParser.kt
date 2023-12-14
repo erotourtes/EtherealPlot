@@ -26,8 +26,9 @@ class MathParser(expression: String) {
 
     private val variables = mutableMapOf("x" to 0.0)
 
-    fun setVariable(name: String, value: Double) {
+    fun setVariable(name: String, value: Double): MathParser {
         variables[name] = value
+        return this
     }
 
     fun eval(): Double {

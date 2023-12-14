@@ -37,6 +37,8 @@ class DrawableView @JvmOverloads constructor(
     private var curStepMultiplier = 1f
     private var prevScaleFactor = 1f
 
+    private lateinit var canvas: Canvas
+
     private var fns = listOf(
         MathParser("x"),
         MathParser("x^2"),
@@ -75,23 +77,24 @@ class DrawableView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        this.canvas = canvas
 
         canvas.withSave {
             concat(matrixCamera)
             concat(matrixCartesian)
             scale(scaleFactor, scaleFactor)
 
-            drawFns(this)
-            drawGrid(this)
-            drawAxis(this)
+            drawFns()
+            drawGrid()
+            drawAxis()
         }
     }
 
-    private fun drawFns(canvas: Canvas) {
-        fns.forEach { drawFn(canvas, it) }
+    private fun drawFns() {
+        fns.forEach { drawFn(it) }
     }
 
-    private fun drawFn(canvas: Canvas, fn: MathParser) {
+    private fun drawFn(fn: MathParser) {
         val (left, _, right, _) = canvas.clipBounds
 
         val step = 1f * curStepMultiplier
@@ -101,10 +104,8 @@ class DrawableView @JvmOverloads constructor(
         while (xCur < xEnd) {
             val xNext = xCur + step
 
-            fn.setVariable("x", xCur / PIXELS_PER_UNIT)
-            val yCur = fn.eval()
-            fn.setVariable("x", xNext / PIXELS_PER_UNIT)
-            val yNext = fn.eval()
+            val yCur = fn.setVariable("x", xCur / PIXELS_PER_UNIT).eval()
+            val yNext = fn.setVariable("x", xNext / PIXELS_PER_UNIT).eval()
 
             canvas.drawLine(
                 xCur.toFloat(),
@@ -118,7 +119,7 @@ class DrawableView @JvmOverloads constructor(
         }
     }
 
-    private fun drawGrid(canvas: Canvas) {
+    private fun drawGrid() {
         recalculateGridStep()
 
         val (left, top, right, bottom) = canvas.clipBounds
@@ -131,7 +132,7 @@ class DrawableView @JvmOverloads constructor(
             val isMain = x.absoluteValue % (gridScale * 5) == 0f
             paint.forGrid(isMain) {
                 canvas.drawLine(x, top.toFloat(), x, bottom.toFloat(), this)
-                if (isMain) writeTextXAxis(canvas, x)
+                if (isMain) writeTextXAxis(x)
             }
             x += gridScale
         }
@@ -141,7 +142,7 @@ class DrawableView @JvmOverloads constructor(
             val isMain = y.absoluteValue % (gridScale * 5) == 0f
             paint.forGrid(isMain) {
                 canvas.drawLine(left.toFloat(), y, right.toFloat(), y, this)
-                if (isMain) writeTextYAxis(canvas, y)
+                if (isMain) writeTextYAxis(y)
             }
             y += gridScale
         }
@@ -178,7 +179,7 @@ class DrawableView @JvmOverloads constructor(
         return text.toDouble().toBigDecimal().toEngineeringString()
     }
 
-    private fun writeTextXAxis(canvas: Canvas, curX: Float) {
+    private fun writeTextXAxis(curX: Float) {
         val text = formatFloatTextForAxis((curX / PIXELS_PER_UNIT).toString())
         val textBound = Rect().apply { paint.getTextBounds(text, 0, text.length, this) }
         val textX = curX - textBound.width()
@@ -186,7 +187,7 @@ class DrawableView @JvmOverloads constructor(
         canvas.drawTextInRightDirection(text, textX, textY, paint)
     }
 
-    private fun writeTextYAxis(canvas: Canvas, curY: Float) {
+    private fun writeTextYAxis(curY: Float) {
         if (curY == 0f) return
         val text = formatFloatTextForAxis((curY / PIXELS_PER_UNIT).toString())
         val textBound = Rect().apply { paint.getTextBounds(text, 0, text.length, this) }
@@ -204,7 +205,7 @@ class DrawableView @JvmOverloads constructor(
         this.color = oldColor
     }
 
-    private fun drawAxis(canvas: Canvas) {
+    private fun drawAxis() {
         val (left, top, right, bottom) = canvas.clipBounds
 
         canvas.drawLine(left.toFloat(), 0f, right.toFloat(), 0f, paint)
