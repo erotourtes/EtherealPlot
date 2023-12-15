@@ -1,8 +1,14 @@
 package com.github.erotourtes.screen.main
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.github.erotourtes.ui.theme.AppTheme
 
 
 data class HomeState(
@@ -11,7 +17,7 @@ data class HomeState(
 
 @Composable
 fun Home() {
-    Text(text = "Hello World")
+    Text(text = "Hello World", modifier = Modifier.padding(16.dp))
 }
 
 @Preview(
@@ -20,7 +26,11 @@ fun Home() {
 )
 @Composable
 fun HomePreview() {
-    Home()
+    AppTheme {
+        Surface(color = MaterialTheme.colorScheme.error) {
+            Home()
+        }
+    }
 }
 
 
