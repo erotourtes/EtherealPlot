@@ -25,7 +25,6 @@ fun CanvasView(
         factory = { context -> CanvasViewNativeView(context) },
         modifier = modifier
     ) { view ->
-//        Log.i("CanvasView", "CanvasView: ${plotState.joinToString()}")
         view.setColors(colorScheme)
         view.setFns(plotState)
         view.setOnPlotNotValid(onPlotNotValid)

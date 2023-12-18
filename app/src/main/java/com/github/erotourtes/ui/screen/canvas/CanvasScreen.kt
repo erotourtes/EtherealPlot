@@ -15,12 +15,15 @@ import com.github.erotourtes.ui.theme.spacing
 
 
 @Composable
-fun CavnasScreen(
+fun CanvasScreen(
     plotViewModel: PlotViewModel = viewModel(),
 ) {
     // TODO: brainstorm this
     val plotState by plotViewModel.plotUIState.collectAsState()
+
+    // WTF: without this log, the canvas doesn't update
     Log.i("CanvasView", "Update is coming CanvasView: ${plotState.joinToString()}")
+
     CanvasLayout(
         plotState = plotState,
         onPlotFormulaChange = plotViewModel::changePlotFormula,
@@ -70,7 +73,7 @@ fun CanvasLayout(
 fun HomePreview() {
     AppTheme {
         Surface(color = MaterialTheme.colorScheme.error) {
-            CavnasScreen()
+            CanvasScreen()
         }
     }
 }
