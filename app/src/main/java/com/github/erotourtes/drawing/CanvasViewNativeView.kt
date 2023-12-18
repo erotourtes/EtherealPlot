@@ -9,6 +9,8 @@ import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
 import android.view.View
 import android.view.View.OnTouchListener
+import androidx.compose.material3.ColorScheme
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.*
 import com.github.erotourtes.utils.MathParser
 import kotlin.math.absoluteValue
@@ -25,8 +27,14 @@ fun Canvas.drawTextInRightDirection(text: String, x: Float, y: Float, paint: Pai
     }
 }
 
+data class Colors(
+    val axes: Int,
+    val bg: Int,
+    val text: Int,
+)
+
 @SuppressLint("ClickableViewAccessibility")
-class DrawableView @JvmOverloads constructor(
+class CanvasViewNativeView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
     private val matrixCamera = Matrix()
@@ -39,6 +47,8 @@ class DrawableView @JvmOverloads constructor(
 
     private lateinit var canvas: Canvas
 
+    private lateinit var colors: Colors
+
     private var fns = listOf(
         MathParser("x"),
         MathParser("x^2"),
@@ -47,7 +57,6 @@ class DrawableView @JvmOverloads constructor(
 
     private val paint = Paint().apply {
         isAntiAlias = true
-        color = Color.RED
         style = Paint.Style.FILL
         strokeWidth = 10f
         textSize = 50f
@@ -84,9 +93,22 @@ class DrawableView @JvmOverloads constructor(
             concat(matrixCartesian)
             scale(scaleFactor, scaleFactor)
 
+            drawBG()
             drawFns()
             drawGrid()
             drawAxis()
+        }
+    }
+
+    fun setColors(c: Colors) {
+        colors = c
+        paint.color = c.axes
+    }
+
+    private fun drawBG() {
+        paint.color = paint.color.also {
+            paint.color = colors.bg
+            canvas.drawRect(canvas.clipBounds, paint)
         }
     }
 
