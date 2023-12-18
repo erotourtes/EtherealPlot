@@ -134,8 +134,8 @@ class CanvasViewNativeView @JvmOverloads constructor(
         while (xCur < xEnd) {
             val xNext = xCur + step
 
-            val yCur = fn.setVariable("x", xCur / PIXELS_PER_UNIT).eval()
-            val yNext = fn.setVariable("x", xNext / PIXELS_PER_UNIT).eval()
+            val yCur = fn.setVariable("x", xCur / PIXELS_PER_UNIT).eval() * PIXELS_PER_UNIT
+            val yNext = fn.setVariable("x", xNext / PIXELS_PER_UNIT).eval() * PIXELS_PER_UNIT
 
             canvas.drawLine(
                 xCur.toFloat(),
