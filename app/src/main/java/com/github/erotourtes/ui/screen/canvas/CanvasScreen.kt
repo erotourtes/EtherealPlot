@@ -30,6 +30,7 @@ fun CavnasScreen(
 fun CanvasLayout(
     plotState: List<PlotUIState>,
     onNameChanged: (PlotUIState, String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState()
     BottomSheetScaffold(
@@ -44,7 +45,7 @@ fun CanvasLayout(
         sheetShape = MaterialTheme.shapes.large,
         sheetContentColor = MaterialTheme.colorScheme.onSurface,
     ) {
-        CanvasView()
+        CanvasView(modifier)
     }
 }
 
