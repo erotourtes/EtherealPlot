@@ -23,10 +23,11 @@ fun CavnasScreen(
     Log.i("CanvasView", "Update is coming CanvasView: ${plotState.joinToString()}")
     CanvasLayout(
         plotState = plotState,
-        onPlotFormulaChanged = plotViewModel::changePlotFormula,
-        onPlotHideStateChanged = plotViewModel::changeHideState,
+        onPlotFormulaChange = plotViewModel::changePlotFormula,
+        onPlotHideStateChange = plotViewModel::changeHideState,
         onPlotRemove = plotViewModel::removePlot,
-        onPlotColorChanged = plotViewModel::changeColor,
+        onPlotColorChange = plotViewModel::changeColor,
+        onPlotNotValid = { plotViewModel.changePlotValidity(it, false) },
     )
 }
 
@@ -34,10 +35,11 @@ fun CavnasScreen(
 @Composable
 fun CanvasLayout(
     plotState: List<PlotUIState>,
-    onPlotFormulaChanged: (PlotUIState, String) -> Unit,
-    onPlotHideStateChanged: (PlotUIState, Boolean) -> Unit,
+    onPlotFormulaChange: (PlotUIState, String) -> Unit,
+    onPlotHideStateChange: (PlotUIState, Boolean) -> Unit,
     onPlotRemove: (PlotUIState) -> Unit,
-    onPlotColorChanged: (PlotUIState, Int) -> Unit,
+    onPlotColorChange: (PlotUIState, Int) -> Unit,
+    onPlotNotValid: (PlotUIState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState()
@@ -47,16 +49,16 @@ fun CanvasLayout(
             PlotsView(
                 fns = plotState,
                 modifier = Modifier.padding(MaterialTheme.spacing.medium),
-                onPlotFormulaChange = onPlotFormulaChanged,
-                onPlotVisibilityChange = onPlotHideStateChanged,
+                onPlotFormulaChange = onPlotFormulaChange,
+                onPlotVisibilityChange = onPlotHideStateChange,
                 onPlotRemove = onPlotRemove,
-                onPlotColorChanged = onPlotColorChanged,
+                onPlotColorChanged = onPlotColorChange,
             )
         },
         sheetShape = MaterialTheme.shapes.large,
         sheetContentColor = MaterialTheme.colorScheme.onSurface,
     ) {
-        CanvasView(plotState, modifier)
+        CanvasView(plotState, onPlotNotValid, modifier)
     }
 }
 

@@ -43,7 +43,7 @@ class MathParser(expression: String) {
         if (rpn.isEmpty()) throw IllegalStateException("Invalid expression")
         try {
             return _eval()
-        } catch (e: NoSuchElementException) {
+        } catch (e: Exception) {
             throw IllegalStateException("Invalid expression")
         }
     }

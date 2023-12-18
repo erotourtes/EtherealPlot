@@ -10,7 +10,6 @@ import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
 import android.view.View
 import android.view.View.OnTouchListener
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.*
 import com.github.erotourtes.model.PlotUIState
@@ -99,6 +98,11 @@ class CanvasViewNativeView @JvmOverloads constructor(
         Log.i("CanvasView", "invalidating")
     }
 
+    private var onPlotNotValid: ((PlotUIState) -> Unit)? = null
+    fun setOnPlotNotValid(block: (PlotUIState) -> Unit) {
+        onPlotNotValid = block
+    }
+
     private fun drawBG() {
         paint.withColor(colors.bg) {
             canvas.drawRect(canvas.clipBounds, paint)
@@ -107,14 +111,20 @@ class CanvasViewNativeView @JvmOverloads constructor(
 
     private fun drawFns() {
         fns.forEach {
-            if (!it.isVisible) return
+            if (!it.isVisible || !it.isValid) return@forEach
             val parser = cachedParsers.getOrPut(it.function) {
                 MathParser(it.function)
             }
             paint.withColor(it.color.toArgb()) {
                 val isSuccess = drawFn(parser)
                 if (!isSuccess) {
-                    Log.e("CanvasView", "Failed to draw function: ${it.function}")
+                    /*
+                    TODO: rework this. Can't call onPlotNotValid directly, because it's iterating
+                          in the same thread and it will cause ConcurrentModificationException
+                     */
+                    post {
+                        onPlotNotValid?.invoke(it)
+                    }
                 }
             }
         }
@@ -141,11 +151,7 @@ class CanvasViewNativeView @JvmOverloads constructor(
             if (yCur == null || yNext == null) return false
 
             canvas.drawLine(
-                xCur.toFloat(),
-                yCur.toFloat(),
-                xNext.toFloat(),
-                yNext.toFloat(),
-                paint
+                xCur.toFloat(), yCur.toFloat(), xNext.toFloat(), yNext.toFloat(), paint
             )
 
             xCur = xNext

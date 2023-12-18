@@ -1,6 +1,5 @@
 package com.github.erotourtes.drawing
 
-import android.util.Log
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -13,6 +12,7 @@ import com.github.erotourtes.model.dumpPlotUIStates
 @Composable
 fun CanvasView(
     plotState: List<PlotUIState>,
+    onPlotNotValid: (PlotUIState) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     // TODO: brainstorm this
@@ -28,6 +28,7 @@ fun CanvasView(
 //        Log.i("CanvasView", "CanvasView: ${plotState.joinToString()}")
         view.setColors(colorScheme)
         view.setFns(plotState)
+        view.setOnPlotNotValid(onPlotNotValid)
     }
 }
 
