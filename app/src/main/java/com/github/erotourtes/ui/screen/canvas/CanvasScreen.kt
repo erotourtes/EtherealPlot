@@ -45,7 +45,7 @@ fun CanvasLayout(
         sheetShape = MaterialTheme.shapes.large,
         sheetContentColor = MaterialTheme.colorScheme.onSurface,
     ) {
-        CanvasView(modifier)
+        CanvasView(plotState, modifier)
     }
 }
 

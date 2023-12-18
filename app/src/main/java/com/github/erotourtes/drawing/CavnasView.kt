@@ -6,9 +6,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
+import com.github.erotourtes.model.PlotUIState
+import com.github.erotourtes.model.dumpPlotUIStates
 
 @Composable
 fun CanvasView(
+    plotState: List<PlotUIState>,
     modifier: Modifier = Modifier
 ) {
     val colorScheme = Colors(
@@ -20,6 +23,7 @@ fun CanvasView(
         factory = { context ->
             CanvasViewNativeView(context).apply {
                 setColors(colorScheme)
+                setFns(plotState)
             }
         },
         modifier = modifier
@@ -31,5 +35,5 @@ fun CanvasView(
 )
 @Composable
 fun Preview() {
-    CanvasView()
+    CanvasView(dumpPlotUIStates)
 }

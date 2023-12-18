@@ -12,6 +12,7 @@ import android.view.View.OnTouchListener
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.*
+import com.github.erotourtes.model.PlotUIState
 import com.github.erotourtes.utils.MathParser
 import kotlin.math.absoluteValue
 
@@ -48,13 +49,10 @@ class CanvasViewNativeView @JvmOverloads constructor(
     private lateinit var canvas: Canvas
 
     private lateinit var colors: Colors
+    private var fns: List<PlotUIState> = emptyList()
+    private val cachedParsers: MutableMap<String, MathParser> = HashMap()
 
-    private var fns = listOf(
-        MathParser("x"),
-        MathParser("x^2"),
-        MathParser("x^3"),
-    )
-
+    // The default color of paint is Colors::axes
     private val paint = Paint().apply {
         isAntiAlias = true
         style = Paint.Style.FILL
@@ -105,6 +103,10 @@ class CanvasViewNativeView @JvmOverloads constructor(
         paint.color = c.axes
     }
 
+    fun setFns(newFns: List<PlotUIState>) {
+        fns = newFns
+    }
+
     private fun drawBG() {
         paint.color = paint.color.also {
             paint.color = colors.bg
@@ -113,7 +115,13 @@ class CanvasViewNativeView @JvmOverloads constructor(
     }
 
     private fun drawFns() {
-        fns.forEach { drawFn(it) }
+        fns.forEach {
+            if (!it.isVisible) return
+            val parser = cachedParsers.getOrPut(it.function) {
+                MathParser(it.function)
+            }
+            drawFn(parser)
+        }
     }
 
     private fun drawFn(fn: MathParser) {
