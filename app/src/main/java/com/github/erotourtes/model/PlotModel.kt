@@ -1,8 +1,7 @@
 package com.github.erotourtes.model
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import android.util.Log
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
@@ -19,18 +18,39 @@ class PlotViewModel : ViewModel() {
 
     val plotUIState = _plotUIState
 
-    var selectedPlot by mutableStateOf(0)
-        private set
-
     init {
         _plotUIState.value = dumpPlotUIStates.toMutableStateList()
     }
 
-    fun changeName(oldState: PlotUIState, newValue: String) {
+    fun changePlotFormula(oldState: PlotUIState, newValue: String) {
+        Log.i("PlotViewModel", "changePlotFormula: $newValue")
         val newState = oldState.copy(function = newValue)
         val index = _plotUIState.value.indexOf(oldState)
         _plotUIState.value = _plotUIState.value.apply {
             set(index, newState)
+        }
+    }
+
+    fun changeHideState(plotUIState: PlotUIState, isVisible: Boolean) {
+        Log.i("PlotViewModel", "changeHideState: $isVisible")
+        val index = _plotUIState.value.indexOf(plotUIState)
+        _plotUIState.value = _plotUIState.value.apply {
+            set(index, plotUIState.copy(isVisible = isVisible))
+        }
+    }
+
+    fun removePlot(plotUIState: PlotUIState) {
+        Log.i("PlotViewModel", "removePlot: $plotUIState")
+        _plotUIState.value = _plotUIState.value.apply {
+            remove(plotUIState)
+        }
+    }
+
+    fun changeColor(plotUIState: PlotUIState, color: Int) {
+        Log.i("PlotViewModel", "changeColor: $color")
+        val index = _plotUIState.value.indexOf(plotUIState)
+        _plotUIState.value = _plotUIState.value.apply {
+            set(index, plotUIState.copy(color = Color(color)))
         }
     }
 }

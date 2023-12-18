@@ -4,29 +4,22 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
 import android.view.View
 import android.view.View.OnTouchListener
-import androidx.compose.material3.ColorScheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.*
 import com.github.erotourtes.model.PlotUIState
 import com.github.erotourtes.utils.MathParser
+import com.github.erotourtes.utils.drawTextInRightDirection
+import com.github.erotourtes.utils.withColor
 import kotlin.math.absoluteValue
 
-
 const val PIXELS_PER_UNIT = 100
-
-fun Canvas.drawTextInRightDirection(text: String, x: Float, y: Float, paint: Paint) {
-    withSave {
-        val textBoundaries = Rect().apply { paint.getTextBounds(text, 0, text.length, this) }
-        translate(x - textBoundaries.width() / 2, y - textBoundaries.height() / 2)
-        scale(1f, -1f)
-        drawText(text, 0f, 0f, paint)
-    }
-}
 
 data class Colors(
     val axes: Int,
@@ -63,10 +56,6 @@ class CanvasViewNativeView @JvmOverloads constructor(
     private val scaleGestureDetector = initScaleGestureDetector(context)
 
     init {
-        initScaleGestureDetector(context)
-    }
-
-    init {
         val listeners = listOf(translateCameraListener(), scaleCameraListener())
 
         setOnTouchListener { _, event ->
@@ -92,24 +81,26 @@ class CanvasViewNativeView @JvmOverloads constructor(
             scale(scaleFactor, scaleFactor)
 
             drawBG()
-            drawFns()
             drawGrid()
             drawAxis()
+            drawFns()
         }
     }
 
     fun setColors(c: Colors) {
         colors = c
         paint.color = c.axes
+        invalidate()
     }
 
     fun setFns(newFns: List<PlotUIState>) {
         fns = newFns
+        invalidate()
+        Log.i("CanvasView", "invalidating")
     }
 
     private fun drawBG() {
-        paint.color = paint.color.also {
-            paint.color = colors.bg
+        paint.withColor(colors.bg) {
             canvas.drawRect(canvas.clipBounds, paint)
         }
     }
@@ -120,11 +111,21 @@ class CanvasViewNativeView @JvmOverloads constructor(
             val parser = cachedParsers.getOrPut(it.function) {
                 MathParser(it.function)
             }
-            drawFn(parser)
+            paint.withColor(it.color.toArgb()) {
+                val isSuccess = drawFn(parser)
+                if (!isSuccess) {
+                    Log.e("CanvasView", "Failed to draw function: ${it.function}")
+                }
+            }
         }
     }
 
-    private fun drawFn(fn: MathParser) {
+    /**
+     * Draws a function on the canvas.
+     * @param fn the function to draw
+     * @return true if the function was drawn successfully, false otherwise
+     * */
+    private fun drawFn(fn: MathParser): Boolean {
         val (left, _, right, _) = canvas.clipBounds
 
         val step = 1f * curStepMultiplier
@@ -134,8 +135,10 @@ class CanvasViewNativeView @JvmOverloads constructor(
         while (xCur < xEnd) {
             val xNext = xCur + step
 
-            val yCur = fn.setVariable("x", xCur / PIXELS_PER_UNIT).eval() * PIXELS_PER_UNIT
-            val yNext = fn.setVariable("x", xNext / PIXELS_PER_UNIT).eval() * PIXELS_PER_UNIT
+            val yCur = fn.setVariable("x", xCur / PIXELS_PER_UNIT).evalOrNull { it * PIXELS_PER_UNIT }
+            val yNext = fn.setVariable("x", xNext / PIXELS_PER_UNIT).evalOrNull { it * PIXELS_PER_UNIT }
+
+            if (yCur == null || yNext == null) return false
 
             canvas.drawLine(
                 xCur.toFloat(),
@@ -147,6 +150,8 @@ class CanvasViewNativeView @JvmOverloads constructor(
 
             xCur = xNext
         }
+
+        return true
     }
 
     private fun drawGrid() {

@@ -31,6 +31,14 @@ class MathParser(expression: String) {
         return this
     }
 
+    inline fun evalOrNull(block: (Double) -> Double = { it }): Double? {
+        return try {
+            block(eval())
+        } catch (e: IllegalStateException) {
+            null
+        }
+    }
+
     fun eval(): Double {
         if (rpn.isEmpty()) throw IllegalStateException("Invalid expression")
         try {

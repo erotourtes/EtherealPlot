@@ -1,5 +1,6 @@
 package com.github.erotourtes.drawing
 
+import android.util.Log
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -14,20 +15,20 @@ fun CanvasView(
     plotState: List<PlotUIState>,
     modifier: Modifier = Modifier
 ) {
+    // TODO: brainstorm this
     val colorScheme = Colors(
         MaterialTheme.colorScheme.primary.toArgb(),
         MaterialTheme.colorScheme.background.toArgb(),
         MaterialTheme.colorScheme.onBackground.toArgb(),
     )
     AndroidView(
-        factory = { context ->
-            CanvasViewNativeView(context).apply {
-                setColors(colorScheme)
-                setFns(plotState)
-            }
-        },
+        factory = { context -> CanvasViewNativeView(context) },
         modifier = modifier
-    )
+    ) { view ->
+//        Log.i("CanvasView", "CanvasView: ${plotState.joinToString()}")
+        view.setColors(colorScheme)
+        view.setFns(plotState)
+    }
 }
 
 @Preview(

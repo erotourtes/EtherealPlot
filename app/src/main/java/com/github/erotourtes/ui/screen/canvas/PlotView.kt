@@ -21,15 +21,21 @@ import com.github.erotourtes.ui.theme.spacing
 @Composable
 fun PlotsView(
     fns: List<PlotUIState>,
+    onPlotFormulaChange: (PlotUIState, String) -> Unit,
+    onPlotVisibilityChange: (PlotUIState, Boolean) -> Unit,
+    onPlotRemove: (PlotUIState) -> Unit,
+    onPlotColorChanged: (PlotUIState, Int) -> Unit,
     modifier: Modifier = Modifier,
-    onNameChanged: (PlotUIState, String) -> Unit = { _, _ -> },
 ) {
     LazyColumn(modifier = modifier.fillMaxWidth()) {
         items(fns) { fn ->
             PlotView(
                 fn = fn,
+                onPlotFormulaChange = { onPlotFormulaChange(fn, it) },
+                onPlotVisibilityChange = { onPlotVisibilityChange(fn, it) },
+                onPlotRemove = { onPlotRemove(fn) },
+                onPlotColorChange = { onPlotColorChanged(fn, it) },
                 modifier = Modifier.clip(MaterialTheme.shapes.medium),
-                onNameChanged = { onNameChanged(fn, it) },
             )
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
         }
@@ -43,15 +49,17 @@ private val MATERIAL_COLOR_PICKER_WIDTH = 30.dp
 @Composable
 fun PlotView(
     fn: PlotUIState,
-    onNameChanged: (String) -> Unit = {},
-    onColorChanged: (Color) -> Unit = {},
+    onPlotFormulaChange: (String) -> Unit,
+    onPlotVisibilityChange: (Boolean) -> Unit,
+    onPlotRemove: () -> Unit,
+    onPlotColorChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier.height(MATERIAL_INPUT_HEIGHT).fillMaxWidth(),
     ) {
         IconButton(
-            onClick = { /*TODO*/ }, modifier = Modifier.background(MaterialTheme.colorScheme.primary)
+            onClick = onPlotRemove, modifier = Modifier.background(MaterialTheme.colorScheme.primary)
         ) {
             Icon(
                 imageVector = Icons.Default.Close,
@@ -61,7 +69,7 @@ fun PlotView(
         }
         TextField(
             value = fn.function,
-            onValueChange = onNameChanged,
+            onValueChange = onPlotFormulaChange,
             textStyle = MaterialTheme.typography.bodyMedium,
             label = { Text("Function") },
             modifier = Modifier.fillMaxWidth().weight(1f),
@@ -69,13 +77,13 @@ fun PlotView(
         )
         ColorPicker(
             initialColor = fn.color,
-            onColorSelected = onColorChanged,
+            onColorSelect = onPlotColorChange,
         )
     }
 }
 
 @Composable
-fun ColorPicker(initialColor: Color, onColorSelected: (Color) -> Unit, modifier: Modifier = Modifier) {
+fun ColorPicker(initialColor: Color, onColorSelect: (Int) -> Unit, modifier: Modifier = Modifier) {
     Canvas(
         modifier = modifier.fillMaxHeight().width(MATERIAL_COLOR_PICKER_WIDTH).background(initialColor)
     ) {}
@@ -92,7 +100,11 @@ fun PlotViewPreview() {
                 PlotUIState(MaterialTheme.colorScheme.primary, "x^2"),
                 PlotUIState(MaterialTheme.colorScheme.secondary, "sin(5x) + x^2"),
                 PlotUIState(MaterialTheme.colorScheme.tertiary, "2x^2"),
-            )
+            ),
+            onPlotColorChanged = { _, _ -> },
+            onPlotFormulaChange = { _, _ -> },
+            onPlotVisibilityChange = { _, _ -> },
+            onPlotRemove = { },
         )
     }
 }

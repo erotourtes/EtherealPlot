@@ -1,5 +1,6 @@
 package com.github.erotourtes.ui.screen.canvas
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,9 +20,13 @@ fun CavnasScreen(
 ) {
     // TODO: brainstorm this
     val plotState by plotViewModel.plotUIState.collectAsState()
+    Log.i("CanvasView", "Update is coming CanvasView: ${plotState.joinToString()}")
     CanvasLayout(
         plotState = plotState,
-        onNameChanged = plotViewModel::changeName,
+        onPlotFormulaChanged = plotViewModel::changePlotFormula,
+        onPlotHideStateChanged = plotViewModel::changeHideState,
+        onPlotRemove = plotViewModel::removePlot,
+        onPlotColorChanged = plotViewModel::changeColor,
     )
 }
 
@@ -29,7 +34,10 @@ fun CavnasScreen(
 @Composable
 fun CanvasLayout(
     plotState: List<PlotUIState>,
-    onNameChanged: (PlotUIState, String) -> Unit,
+    onPlotFormulaChanged: (PlotUIState, String) -> Unit,
+    onPlotHideStateChanged: (PlotUIState, Boolean) -> Unit,
+    onPlotRemove: (PlotUIState) -> Unit,
+    onPlotColorChanged: (PlotUIState, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState()
@@ -39,7 +47,10 @@ fun CanvasLayout(
             PlotsView(
                 fns = plotState,
                 modifier = Modifier.padding(MaterialTheme.spacing.medium),
-                onNameChanged = onNameChanged
+                onPlotFormulaChange = onPlotFormulaChanged,
+                onPlotVisibilityChange = onPlotHideStateChanged,
+                onPlotRemove = onPlotRemove,
+                onPlotColorChanged = onPlotColorChanged,
             )
         },
         sheetShape = MaterialTheme.shapes.large,
