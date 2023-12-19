@@ -2,9 +2,11 @@ package com.github.erotourtes.ui.screen.canvas
 
 import android.util.Log
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.erotourtes.drawing.CanvasView
@@ -41,7 +43,7 @@ fun CanvasLayout(
     onPlotFormulaChange: (PlotUIState, String) -> Unit,
     onPlotHideStateChange: (PlotUIState, Boolean) -> Unit,
     onPlotRemove: (PlotUIState) -> Unit,
-    onPlotColorChange: (PlotUIState, Int) -> Unit,
+    onPlotColorChange: (PlotUIState, Color) -> Unit,
     onPlotNotValid: (PlotUIState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -55,10 +57,12 @@ fun CanvasLayout(
                 onPlotFormulaChange = onPlotFormulaChange,
                 onPlotVisibilityChange = onPlotHideStateChange,
                 onPlotRemove = onPlotRemove,
-                onPlotColorChanged = onPlotColorChange,
+                onPlotColorChange = onPlotColorChange,
             )
         },
-        sheetShape = MaterialTheme.shapes.large,
+        sheetShape = MaterialTheme.shapes.large.copy(
+            bottomStart = CornerSize(0),
+            bottomEnd = CornerSize(0)),
         sheetContentColor = MaterialTheme.colorScheme.onSurface,
     ) {
         CanvasView(plotState, onPlotNotValid, modifier)
@@ -77,5 +81,3 @@ fun HomePreview() {
         }
     }
 }
-
-

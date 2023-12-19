@@ -1,7 +1,11 @@
 package com.github.erotourtes.ui.screen.canvas
 
-import androidx.compose.foundation.Canvas
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,20 +28,45 @@ fun PlotsView(
     onPlotFormulaChange: (PlotUIState, String) -> Unit,
     onPlotVisibilityChange: (PlotUIState, Boolean) -> Unit,
     onPlotRemove: (PlotUIState) -> Unit,
-    onPlotColorChanged: (PlotUIState, Int) -> Unit,
+    onPlotColorChange: (PlotUIState, Color) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(modifier = modifier.fillMaxWidth()) {
-        items(fns) { fn ->
-            PlotView(
-                fn = fn,
-                onPlotFormulaChange = { onPlotFormulaChange(fn, it) },
-                onPlotVisibilityChange = { onPlotVisibilityChange(fn, it) },
-                onPlotRemove = { onPlotRemove(fn) },
-                onPlotColorChange = { onPlotColorChanged(fn, it) },
-                modifier = Modifier.clip(MaterialTheme.shapes.medium),
+    var selectedFn by remember { mutableStateOf<PlotUIState?>(null) }
+
+    Box {
+        LazyColumn(modifier = modifier.fillMaxWidth()) {
+            items(fns) { fn ->
+                PlotView(
+                    fn = fn,
+                    onPlotFormulaChange = { onPlotFormulaChange(fn, it) },
+                    onPlotVisibilityChange = { onPlotVisibilityChange(fn, it) },
+                    onPlotRemove = { onPlotRemove(fn) },
+                    onPlotColorChangeRequest = { selectedFn = fn },
+                    modifier = Modifier.clip(MaterialTheme.shapes.medium),
+                )
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+            }
+        }
+
+        AnimatedVisibility(
+            visible = selectedFn != null,
+            enter = slideInVertically(
+                initialOffsetY = { it },
+                animationSpec = tween(300)
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it },
+                animationSpec = tween(300)
+            ),
+        ) {
+        if (selectedFn != null)
+            ColorPickerScreen(
+                initialColor = selectedFn!!.color,
+                onColorChange = {
+                    onPlotColorChange(selectedFn!!, it)
+                },
+                onBackPress = { selectedFn = null },
             )
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
         }
     }
 }
@@ -52,11 +81,13 @@ fun PlotView(
     onPlotFormulaChange: (String) -> Unit,
     onPlotVisibilityChange: (Boolean) -> Unit,
     onPlotRemove: () -> Unit,
-    onPlotColorChange: (Int) -> Unit,
+    onPlotColorChangeRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier.height(MATERIAL_INPUT_HEIGHT).fillMaxWidth(),
+        modifier = modifier
+            .height(MATERIAL_INPUT_HEIGHT)
+            .fillMaxWidth(),
     ) {
         IconButton(
             onClick = onPlotRemove, modifier = Modifier.background(MaterialTheme.colorScheme.primary)
@@ -72,21 +103,19 @@ fun PlotView(
             onValueChange = onPlotFormulaChange,
             textStyle = MaterialTheme.typography.bodyMedium,
             label = { Text("Function") },
-            modifier = Modifier.fillMaxWidth().weight(1f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
             singleLine = true,
         )
-        ColorPicker(
-            initialColor = fn.color,
-            onColorSelect = onPlotColorChange,
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(MATERIAL_COLOR_PICKER_WIDTH)
+                .background(fn.color)
+                .clickable { onPlotColorChangeRequest() }
+        ) {}
     }
-}
-
-@Composable
-fun ColorPicker(initialColor: Color, onColorSelect: (Int) -> Unit, modifier: Modifier = Modifier) {
-    Canvas(
-        modifier = modifier.fillMaxHeight().width(MATERIAL_COLOR_PICKER_WIDTH).background(initialColor)
-    ) {}
 }
 
 @Preview(
@@ -101,10 +130,10 @@ fun PlotViewPreview() {
                 PlotUIState(MaterialTheme.colorScheme.secondary, "sin(5x) + x^2"),
                 PlotUIState(MaterialTheme.colorScheme.tertiary, "2x^2"),
             ),
-            onPlotColorChanged = { _, _ -> },
             onPlotFormulaChange = { _, _ -> },
             onPlotVisibilityChange = { _, _ -> },
             onPlotRemove = { },
+            onPlotColorChange = { _, _ -> },
         )
     }
 }

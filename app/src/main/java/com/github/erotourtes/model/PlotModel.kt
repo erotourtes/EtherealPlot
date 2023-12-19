@@ -3,6 +3,7 @@ package com.github.erotourtes.model
 import android.util.Log
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -50,12 +51,12 @@ class PlotViewModel : ViewModel() {
         }
     }
 
-    fun changeColor(plotUIState: PlotUIState, color: Int) {
+    fun changeColor(plotUIState: PlotUIState, color: Color) {
         Log.i("PlotViewModel", "changeColor: $color")
         val index = _plotUIState.value.indexOf(plotUIState)
         if (isInvalidIndex(index)) return
         _plotUIState.value = _plotUIState.value.apply {
-            set(index, plotUIState.copy(color = Color(color)))
+            set(index, plotUIState.copy(color = Color(color.toArgb())))
         }
     }
 
