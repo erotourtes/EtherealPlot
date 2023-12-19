@@ -23,9 +23,6 @@ fun CanvasScreen(
     // TODO: brainstorm this
     val plotState by plotViewModel.plotUIState.collectAsState()
 
-    // WTF: without this log, the canvas doesn't update
-    Log.i("CanvasView", "Update is coming CanvasView: ${plotState.joinToString()}")
-
     CanvasLayout(
         plotState = plotState,
         onPlotFormulaChange = plotViewModel::changePlotFormula,
@@ -60,9 +57,7 @@ fun CanvasLayout(
                 onPlotColorChange = onPlotColorChange,
             )
         },
-        sheetShape = MaterialTheme.shapes.large.copy(
-            bottomStart = CornerSize(0),
-            bottomEnd = CornerSize(0)),
+        sheetShape = MaterialTheme.shapes.large.copy(bottomStart = CornerSize(0), bottomEnd = CornerSize(0)),
         sheetContentColor = MaterialTheme.colorScheme.onSurface,
     ) {
         CanvasView(plotState, onPlotNotValid, modifier)

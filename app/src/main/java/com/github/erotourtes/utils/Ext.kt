@@ -18,7 +18,7 @@ fun Canvas.drawTextInRightDirection(text: String, x: Float, y: Float, paint: Pai
     }
 }
 
-fun Paint.withColor(c: Int, block: Paint.() -> Unit) {
+inline fun Paint.withColor(c: Int, block: Paint.() -> Unit) {
     color = color.also {
         color = c
         block()

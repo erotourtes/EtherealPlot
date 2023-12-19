@@ -110,24 +110,20 @@ class CanvasViewNativeView @JvmOverloads constructor(
     }
 
     private fun drawFns() {
-        fns.forEach {
-            if (!it.isVisible || !it.isValid) return@forEach
+        // TODO: optimise using coroutines
+        val invalidatedFns = mutableListOf<PlotUIState>()
+        fns.filter { it.isValid && it.isVisible }.forEach {
             val parser = cachedParsers.getOrPut(it.function) {
                 MathParser(it.function)
             }
             paint.withColor(it.color.toArgb()) {
                 val isSuccess = drawFn(parser)
-                if (!isSuccess) {
-                    /*
-                    TODO: rework this. Can't call onPlotNotValid directly, because it's iterating
-                          in the same thread and it will cause ConcurrentModificationException
-                     */
-                    post {
-                        onPlotNotValid?.invoke(it)
-                    }
-                }
+                /* Can't call onPlotNotValid directly because it will throw an exception */
+                if (!isSuccess) invalidatedFns.add(it)
             }
         }
+
+        invalidatedFns.forEach { onPlotNotValid?.invoke(it) }
     }
 
     /**
