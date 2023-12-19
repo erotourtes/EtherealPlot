@@ -29,6 +29,7 @@ fun PlotsView(
     onPlotVisibilityChange: (PlotUIState, Boolean) -> Unit,
     onPlotRemove: (PlotUIState) -> Unit,
     onPlotColorChange: (PlotUIState, Color) -> Unit,
+    onPlotCreate: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var selectedFn by remember { mutableStateOf<PlotUIState?>(null) }
@@ -45,6 +46,12 @@ fun PlotsView(
                     modifier = Modifier.clip(MaterialTheme.shapes.medium),
                 )
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+            }
+
+            item {
+                Button(onClick = onPlotCreate) {
+                    Text("Add plot")
+                }
             }
         }
 
@@ -137,6 +144,7 @@ fun PlotViewPreview() {
             onPlotVisibilityChange = { _, _ -> },
             onPlotRemove = { },
             onPlotColorChange = { _, _ -> },
+            onPlotCreate = { },
         )
     }
 }

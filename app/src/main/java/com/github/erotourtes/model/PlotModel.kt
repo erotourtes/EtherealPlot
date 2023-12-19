@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
+import com.github.erotourtes.utils.random
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -57,6 +58,21 @@ class PlotViewModel : ViewModel() {
         Log.i("PlotViewModel", "changePlotValidity: $isValid ${Thread.currentThread().name}")
         updateProperty(plotUIState) {
             copy(isValid = isValid)
+        }
+    }
+
+    fun createNew(color: Color = Color.random()) {
+        _plotUIState.update { list ->
+            val updated = list.toMutableList()
+            updated.add(
+                PlotUIState(
+                    color = color,
+                    function = "",
+                    isVisible = true,
+                    isValid = true,
+                )
+            )
+            updated
         }
     }
 

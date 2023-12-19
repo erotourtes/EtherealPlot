@@ -30,6 +30,7 @@ fun CanvasScreen(
         onPlotRemove = plotViewModel::removePlot,
         onPlotColorChange = plotViewModel::changeColor,
         onPlotNotValid = { plotViewModel.changePlotValidity(it, false) },
+        onPlotCreate = { plotViewModel.createNew()}
     )
 }
 
@@ -42,6 +43,7 @@ fun CanvasLayout(
     onPlotRemove: (PlotUIState) -> Unit,
     onPlotColorChange: (PlotUIState, Color) -> Unit,
     onPlotNotValid: (PlotUIState) -> Unit,
+    onPlotCreate: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState()
@@ -55,6 +57,7 @@ fun CanvasLayout(
                 onPlotVisibilityChange = onPlotHideStateChange,
                 onPlotRemove = onPlotRemove,
                 onPlotColorChange = onPlotColorChange,
+                onPlotCreate = onPlotCreate,
             )
         },
         sheetShape = MaterialTheme.shapes.large.copy(bottomStart = CornerSize(0), bottomEnd = CornerSize(0)),

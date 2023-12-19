@@ -3,7 +3,9 @@ package com.github.erotourtes.utils
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.core.graphics.withSave
+import kotlin.random.Random
 
 /**
  * Draws text by reflecting it in the X axis.
@@ -23,4 +25,13 @@ inline fun Paint.withColor(c: Int, block: Paint.() -> Unit) {
         color = c
         block()
     }
+}
+
+fun Color.Companion.random(): Color {
+    return Color(
+        red = Random.nextFloat(),
+        green = Random.nextFloat(),
+        blue = Random.nextFloat(),
+        alpha = 1f
+    )
 }
