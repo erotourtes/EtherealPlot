@@ -59,14 +59,14 @@ fun PlotsView(
                 animationSpec = tween(300)
             ),
         ) {
-        if (selectedFn != null)
-            ColorPickerScreen(
-                initialColor = selectedFn!!.color,
-                onColorChange = {
-                    onPlotColorChange(selectedFn!!, it)
-                },
-                onBackPress = { selectedFn = null },
-            )
+            if (selectedFn != null)
+                ColorPickerScreen(
+                    initialColor = selectedFn!!.color,
+                    onColorChange = {
+                        onPlotColorChange(selectedFn!!, it)
+                    },
+                    onBackPress = { selectedFn = null },
+                )
         }
     }
 }
@@ -90,7 +90,10 @@ fun PlotView(
             .fillMaxWidth(),
     ) {
         IconButton(
-            onClick = onPlotRemove, modifier = Modifier.background(MaterialTheme.colorScheme.primary)
+            onClick = onPlotRemove,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.primary)
+                .height(MATERIAL_INPUT_HEIGHT)
         ) {
             Icon(
                 imageVector = Icons.Default.Close,
