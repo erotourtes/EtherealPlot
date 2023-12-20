@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
-enum class DragAnchors(val fraction: Float) {
+private enum class DragAnchors(val fraction: Float) {
     Start(0f),
     Half(.5f), // recalculating this value on size change to fit hidden content
     End(1f),
