@@ -12,10 +12,9 @@ import com.github.erotourtes.model.dumpPlotUIStates
 @Composable
 fun CanvasView(
     plotState: List<PlotUIState>,
-    onPlotNotValid: (PlotUIState) -> Unit = {},
+    onPlotNotValid: (PlotUIState) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // TODO: brainstorm this
     val colorScheme = Colors(
         MaterialTheme.colorScheme.primary.toArgb(),
         MaterialTheme.colorScheme.background.toArgb(),
@@ -36,5 +35,5 @@ fun CanvasView(
 )
 @Composable
 fun Preview() {
-    CanvasView(dumpPlotUIStates)
+    CanvasView(dumpPlotUIStates, {})
 }
