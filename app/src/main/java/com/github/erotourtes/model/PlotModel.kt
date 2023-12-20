@@ -5,15 +5,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import com.github.erotourtes.utils.random
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlin.coroutines.coroutineContext
 
 data class PlotUIState(
     val color: Color,
     val function: String,
     val isVisible: Boolean = true,
     val isValid: Boolean = true,
+    val uuid: String = java.util.UUID.randomUUID().toString()
 )
 
 class PlotViewModel : ViewModel() {

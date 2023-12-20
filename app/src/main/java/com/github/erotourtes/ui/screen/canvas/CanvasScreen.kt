@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.erotourtes.drawing.CanvasView
 import com.github.erotourtes.model.PlotUIState
@@ -48,22 +49,23 @@ fun CanvasLayout(
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState()
     BottomSheetScaffold(
+        modifier = modifier.height(600.dp),
         scaffoldState = scaffoldState,
         sheetContent = {
             PlotsView(
                 fns = plotState,
-                modifier = Modifier.padding(MaterialTheme.spacing.medium),
                 onPlotFormulaChange = onPlotFormulaChange,
                 onPlotVisibilityChange = onPlotHideStateChange,
                 onPlotRemove = onPlotRemove,
                 onPlotColorChange = onPlotColorChange,
                 onPlotCreate = onPlotCreate,
+                modifier = Modifier.padding(MaterialTheme.spacing.medium).defaultMinSize(minHeight = 600.dp)
             )
         },
         sheetShape = MaterialTheme.shapes.large.copy(bottomStart = CornerSize(0), bottomEnd = CornerSize(0)),
         sheetContentColor = MaterialTheme.colorScheme.onSurface,
     ) {
-        CanvasView(plotState, onPlotNotValid, modifier)
+//        CanvasView(plotState, onPlotNotValid, modifier)
     }
 }
 

@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
-private enum class DragAnchors(val fraction: Float) {
+enum class DragAnchors(val fraction: Float) {
     Start(0f),
     Half(.5f), // recalculating this value on size change to fit hidden content
     End(1f),
@@ -26,7 +26,8 @@ private enum class DragAnchors(val fraction: Float) {
 fun SwapToReveal(
     hiddenContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    onPercentageChanged: (Float) -> Unit = {},
+    onPercentageChanged: ((Float) -> Unit)? = null,
+    onAnchorChanged: (DragAnchors) -> Unit = {},
     content: @Composable () -> Unit,
 ) {
     var hiddenWidth by remember { mutableFloatStateOf(0f) }
@@ -61,10 +62,12 @@ fun SwapToReveal(
             })
     }
 
-    if (fullWidth != 0f) {
+    if (fullWidth != 0f && onPercentageChanged != null) {
         val percentage = anchoredDraggableState.offset / fullWidth
         onPercentageChanged(percentage)
     }
+
+    onAnchorChanged(anchoredDraggableState.targetValue)
 
 
     Box(modifier = modifier
