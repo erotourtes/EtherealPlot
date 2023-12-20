@@ -1,10 +1,6 @@
 package com.github.erotourtes.ui.screen.canvas
 
 import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -38,66 +34,75 @@ fun PlotsView(
     onPlotCreate: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var selectedFn by remember { mutableStateOf<PlotUIState?>(null) }
-
     Box {
-        // Another solution would be to use SwipeToDismiss
         LazyColumn(modifier = modifier.fillMaxWidth()) {
-            items(fns) { fn ->
-                key(fn.uuid) {
-                    SwapToReveal(
-                        onAnchorChanged = { anchor ->
-                            Log.i("PlotsView", "onAnchorChanged: $anchor for $fn")
-                            if (anchor == DragAnchors.End) {
-                                onPlotRemove(fn)
-                            }
-                        },
-                        hiddenContent = {
-                            PlotControls(
-                                isVisible = fn.isVisible,
-                                onPlotRemove = { onPlotRemove(fn) },
-                                onPlotVisibilityChange = { onPlotVisibilityChange(fn, it) },
-                            )
-                        },
-                        modifier = Modifier
-                            .clip(MaterialTheme.shapes.medium)
-                            .animateItemPlacement(),
-                    ) {
-                        PlotView(
-                            fn = fn,
-                            onPlotFormulaChange = { onPlotFormulaChange(fn, it) },
-                            onPlotColorChangeRequest = { selectedFn = fn },
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-                }
+            items(fns, key = { it.uuid }) { fn ->
+                SwappablePlotView(
+                    fn,
+                    onPlotRemove,
+                    onPlotVisibilityChange,
+                    onPlotFormulaChange,
+                    onPlotColorChange,
+                )
             }
 
             item {
-                Button(onClick = onPlotCreate) {
+                Button(onClick = onPlotCreate, modifier = Modifier.fillMaxWidth()) {
                     Text("Add plot")
                 }
             }
         }
 
-        AnimatedVisibility(
-            visible = selectedFn != null,
-            enter = slideInVertically(
-                initialOffsetY = { it }, animationSpec = tween(300)
-            ),
-            exit = slideOutVertically(
-                targetOffsetY = { it }, animationSpec = tween(300)
-            ),
-        ) {
-            if (selectedFn != null) ColorPickerScreen(
-                initialColor = selectedFn!!.color,
-                onColorChange = {
-                    onPlotColorChange(selectedFn!!, it)
-                },
-                onBackPress = { selectedFn = null },
-            )
-        }
+//        AnimatedVisibility(
+//            visible = selectedFn != null,
+//            enter = slideInVertically(
+//                initialOffsetY = { it }, animationSpec = tween(300)
+//            ),
+//            exit = slideOutVertically(
+//                targetOffsetY = { it }, animationSpec = tween(300)
+//            ),
+//        ) {
+//            if (selectedFn != null) ColorPickerScreen(
+//                initialColor = selectedFn!!.color,
+//                onColorChange = {
+//                    onPlotColorChange(selectedFn!!, it)
+//                },
+//                onBackPress = { selectedFn = null },
+//            )
+//        }
     }
+}
+
+@Composable
+private fun SwappablePlotView(
+    fn: PlotUIState,
+    onPlotRemove: (PlotUIState) -> Unit,
+    onPlotVisibilityChange: (PlotUIState, Boolean) -> Unit,
+    onPlotFormulaChange: (PlotUIState, String) -> Unit,
+    onPlotColorChange: (PlotUIState, Color) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    // Another solution would be to use SwipeToDismiss
+    SwapToReveal(onAnchorChanged = { anchor ->
+        Log.i("PlotsView", "onAnchorChanged: $anchor for $fn")
+        if (anchor == DragAnchors.End) {
+            onPlotRemove(fn)
+        }
+    }, hiddenContent = {
+        PlotControls(
+            isVisible = fn.isVisible,
+            onPlotRemove = { onPlotRemove(fn) },
+            onPlotVisibilityChange = { onPlotVisibilityChange(fn, it) },
+        )
+    }, modifier = modifier.clip(MaterialTheme.shapes.medium)
+    ) {
+        PlotView(
+            fn = fn,
+            onPlotFormulaChange = { onPlotFormulaChange(fn, it) },
+            onPlotColorChangeRequest = { TODO("for later") },
+        )
+    }
+    Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 }
 
 private val MATERIAL_INPUT_HEIGHT = 50.dp
