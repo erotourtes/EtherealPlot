@@ -23,10 +23,10 @@ enum class DragAnchors(val fraction: Float) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Swap(
+fun SwapToReveal(
     hiddenContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    onEndRange: () -> Unit = {},
+    onPercentageChanged: (Float) -> Unit = {},
     content: @Composable () -> Unit,
 ) {
     var hiddenWidth by remember { mutableFloatStateOf(0f) }
@@ -61,10 +61,9 @@ fun Swap(
             })
     }
 
-    anchoredDraggableState.currentValue.let { anchor ->
-        if (anchor == DragAnchors.End) {
-            onEndRange()
-        }
+    if (fullWidth != 0f) {
+        val percentage = anchoredDraggableState.offset / fullWidth
+        onPercentageChanged(percentage)
     }
 
 
@@ -109,9 +108,9 @@ fun SwapPreview() {
     var height by remember {
         mutableStateOf(150.dp)
     }
-    Swap(
-        onEndRange = {
-            height = 0.dp
+    SwapToReveal(
+        onPercentageChanged = {
+            height = (it * 150).coerceAtLeast(50f).dp
         },
         hiddenContent = {
             Box(
@@ -124,7 +123,8 @@ fun SwapPreview() {
         modifier = Modifier
             .background(color = Color.Blue)
             .fillMaxWidth()
-            .height(height),
+            .height(height)
+            .padding(10.dp),
     ) {
         Box(
             modifier = Modifier
