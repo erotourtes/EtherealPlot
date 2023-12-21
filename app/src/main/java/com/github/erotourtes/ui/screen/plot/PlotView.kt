@@ -1,7 +1,7 @@
 package com.github.erotourtes.ui.screen.plot
 
 import android.util.Log
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,11 +13,11 @@ import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.github.erotourtes.model.PlotUIState
 import com.github.erotourtes.ui.theme.AppTheme
@@ -66,9 +66,18 @@ private fun OpenablePlotView(
     onPlotColorChange: (PlotUIState, Color) -> Unit,
 ) {
     var isExpanded by remember { mutableStateOf(false) }
+    var isRemoving by remember { mutableStateOf(false) }
     var prevColor by remember { mutableStateOf(fn.color) }
 
+    val height by animateDpAsState(
+        targetValue = if (isRemoving) 0.dp else Dp.Unspecified,
+        label = "Height animation",
+        finishedListener = {
+            onPlotRemove(fn)
+        })
+
     ExpandableCard(
+        modifier = Modifier.height(height),
         expandableContent = {
             ColorPickerScreen(
                 initialColor = fn.color,
@@ -86,7 +95,7 @@ private fun OpenablePlotView(
     ) {
         SwappablePlotView(
             fn = fn,
-            onPlotRemove = onPlotRemove,
+            onPlotRemove = { isExpanded = !isExpanded; isRemoving = true },
             onPlotVisibilityChange = onPlotVisibilityChange,
             onPlotFormulaChange = onPlotFormulaChange,
             onPlotColorChangeRequest = { isExpanded = !isExpanded },
@@ -106,12 +115,7 @@ private fun SwappablePlotView(
 ) {
     // Another solution would be to use SwipeToDismiss
     SwapToReveal(
-        onAnchorChanged = { anchor ->
-            Log.i("PlotsView", "onAnchorChanged: $anchor for $fn")
-            if (anchor == DragAnchors.End) {
-                onPlotRemove(fn)
-            }
-        },
+        onRemove = { onPlotRemove(fn)},
         hiddenContent = {
             PlotControls(
                 isVisible = fn.isVisible,

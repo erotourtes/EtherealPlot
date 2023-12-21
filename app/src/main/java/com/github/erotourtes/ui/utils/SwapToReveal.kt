@@ -16,8 +16,7 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
 enum class DragAnchors(val fraction: Float) {
-    Start(0f),
-    Half(.5f), // recalculating this value on size change to fit hidden content
+    Start(0f), Half(.5f), // recalculating this value on size change to fit hidden content
     End(1f),
 }
 
@@ -26,8 +25,7 @@ enum class DragAnchors(val fraction: Float) {
 fun SwapToReveal(
     hiddenContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    onPercentageChanged: ((Float) -> Unit)? = null,
-    onAnchorChanged: (DragAnchors) -> Unit = {},
+    onRemove: () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
     var hiddenWidth by remember { mutableFloatStateOf(0f) }
@@ -42,64 +40,52 @@ fun SwapToReveal(
             positionalThreshold = { distance: Float -> distance * 0.5f },
             velocityThreshold = { with(density) { 100.dp.toPx() } },
             animationSpec = tween(),
+            confirmValueChange = { newValue ->
+                if (newValue == DragAnchors.End) {
+                    onRemove()
+                    false
+                } else true
+            },
         ).apply {
-            updateAnchors(
-                DraggableAnchors {
-                    DragAnchors.entries.forEach { anchor -> anchor at 0f }
-                })
+            updateAnchors(DraggableAnchors {
+                DragAnchors.entries.forEach { anchor -> anchor at 0f }
+            })
         }
     }
 
     LaunchedEffect(fullWidth, hiddenWidth) {
         val dragEndPoint = fullWidth * (1 - minVisibleFraction)
-        anchoredDraggableState.updateAnchors(
-            DraggableAnchors {
-                DragAnchors.entries
-                    .forEach { anchor ->
-                        if (anchor == DragAnchors.Half) anchor at hiddenWidth
-                        else anchor at dragEndPoint * anchor.fraction
-                    }
-            })
+        anchoredDraggableState.updateAnchors(DraggableAnchors {
+            DragAnchors.entries.forEach { anchor ->
+                if (anchor == DragAnchors.Half) anchor at hiddenWidth
+                else anchor at dragEndPoint * anchor.fraction
+            }
+        })
     }
 
-    if (fullWidth != 0f && onPercentageChanged != null) {
-        val percentage = anchoredDraggableState.offset / fullWidth
-        onPercentageChanged(percentage)
-    }
-
-    onAnchorChanged(anchoredDraggableState.targetValue)
-
-
-    Box(modifier = modifier
-        .onGloballyPositioned {
-            fullWidth = it.size.width.toFloat()
-        }
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxHeight()
-                .onGloballyPositioned {
-                    hiddenWidth = it.size.width
-                        .toFloat()
-                        .coerceIn(0f, fullWidth)
-                }
-        ) {
+    Box(modifier = modifier.onGloballyPositioned {
+        fullWidth = it.size.width.toFloat()
+    }) {
+        Box(modifier = Modifier
+            .fillMaxHeight()
+            .onGloballyPositioned {
+                hiddenWidth = it.size.width
+                    .toFloat()
+                    .coerceIn(0f, fullWidth)
+            }) {
             hiddenContent()
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxHeight()
-                .offset {
-                    IntOffset(
-                        x = anchoredDraggableState
-                            .requireOffset()
-                            .roundToInt(),
-                        y = 0
-                    )
-                }
-                .anchoredDraggable(anchoredDraggableState, Orientation.Horizontal)
-        ) {
+        Box(modifier = Modifier
+            .fillMaxHeight()
+            .offset {
+                IntOffset(
+                    x = anchoredDraggableState
+                        .requireOffset()
+                        .roundToInt(), y = 0
+                )
+            }
+            .anchoredDraggable(anchoredDraggableState, Orientation.Horizontal)) {
             content()
         }
     }
@@ -108,13 +94,10 @@ fun SwapToReveal(
 @Preview
 @Composable
 fun SwapPreview() {
-    var height by remember {
+    val height by remember {
         mutableStateOf(150.dp)
     }
     SwapToReveal(
-        onPercentageChanged = {
-            height = (it * 150).coerceAtLeast(50f).dp
-        },
         hiddenContent = {
             Box(
                 modifier = Modifier
