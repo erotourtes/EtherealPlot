@@ -1,14 +1,9 @@
 package com.github.erotourtes.ui.screen.plot
 
-import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,8 +24,8 @@ private val PICKER_SIZE = 300.dp
 fun ColorPickerScreen(
     initialColor: Color,
     onColorChange: (Color) -> Unit,
-    onBackPress: () -> Unit = {},
     modifier: Modifier = Modifier,
+    onBackPress: () -> Unit = {},
 ) {
     val controller = rememberColorPickerController()
 
