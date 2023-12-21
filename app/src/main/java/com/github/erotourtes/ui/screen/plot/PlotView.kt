@@ -22,8 +22,10 @@ import androidx.compose.ui.unit.dp
 import com.github.erotourtes.model.PlotUIState
 import com.github.erotourtes.ui.theme.AppTheme
 import com.github.erotourtes.ui.theme.spacing
+import com.github.erotourtes.ui.utils.DragAnchors
+import com.github.erotourtes.ui.utils.ExpandableCard
+import com.github.erotourtes.ui.utils.SwapToReveal
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PlotsView(
     fns: List<PlotUIState>,
@@ -37,12 +39,12 @@ fun PlotsView(
     Box {
         LazyColumn(modifier = modifier.fillMaxWidth()) {
             items(fns, PlotUIState::uuid) { fn ->
-                SwappablePlotView(
-                    fn,
-                    onPlotRemove,
-                    onPlotVisibilityChange,
-                    onPlotFormulaChange,
-                    onPlotColorChange,
+                OpenablePlotView(
+                    fn = fn,
+                    onPlotRemove = onPlotRemove,
+                    onPlotVisibilityChange = onPlotVisibilityChange,
+                    onPlotFormulaChange = onPlotFormulaChange,
+                    onPlotColorChange = onPlotColorChange,
                 )
             }
 
@@ -52,25 +54,45 @@ fun PlotsView(
                 }
             }
         }
-
-//        AnimatedVisibility(
-//            visible = selectedFn != null,
-//            enter = slideInVertically(
-//                initialOffsetY = { it }, animationSpec = tween(300)
-//            ),
-//            exit = slideOutVertically(
-//                targetOffsetY = { it }, animationSpec = tween(300)
-//            ),
-//        ) {
-//            if (selectedFn != null) ColorPickerScreen(
-//                initialColor = selectedFn!!.color,
-//                onColorChange = {
-//                    onPlotColorChange(selectedFn!!, it)
-//                },
-//                onBackPress = { selectedFn = null },
-//            )
-//        }
     }
+}
+
+@Composable
+private fun OpenablePlotView(
+    fn: PlotUIState,
+    onPlotRemove: (PlotUIState) -> Unit,
+    onPlotVisibilityChange: (PlotUIState, Boolean) -> Unit,
+    onPlotFormulaChange: (PlotUIState, String) -> Unit,
+    onPlotColorChange: (PlotUIState, Color) -> Unit,
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+    var prevColor by remember { mutableStateOf(fn.color) }
+
+    ExpandableCard(
+        expandableContent = {
+            ColorPickerScreen(
+                initialColor = fn.color,
+                onColorChange = {
+                    prevColor = fn.color
+                    onPlotColorChange(fn, it)
+                },
+                onBackPress = {
+                    onPlotColorChange(fn, prevColor)
+                    isExpanded = !isExpanded
+                },
+                modifier = Modifier.padding(horizontal = MaterialTheme.spacing.medium)
+            )
+        }, expanded = isExpanded
+    ) {
+        SwappablePlotView(
+            fn = fn,
+            onPlotRemove = onPlotRemove,
+            onPlotVisibilityChange = onPlotVisibilityChange,
+            onPlotFormulaChange = onPlotFormulaChange,
+            onPlotColorChangeRequest = { isExpanded = !isExpanded },
+        )
+    }
+    Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 }
 
 @Composable
@@ -79,30 +101,32 @@ private fun SwappablePlotView(
     onPlotRemove: (PlotUIState) -> Unit,
     onPlotVisibilityChange: (PlotUIState, Boolean) -> Unit,
     onPlotFormulaChange: (PlotUIState, String) -> Unit,
-    onPlotColorChange: (PlotUIState, Color) -> Unit,
+    onPlotColorChangeRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // Another solution would be to use SwipeToDismiss
-    SwapToReveal(onAnchorChanged = { anchor ->
-        Log.i("PlotsView", "onAnchorChanged: $anchor for $fn")
-        if (anchor == DragAnchors.End) {
-            onPlotRemove(fn)
-        }
-    }, hiddenContent = {
-        PlotControls(
-            isVisible = fn.isVisible,
-            onPlotRemove = { onPlotRemove(fn) },
-            onPlotVisibilityChange = { onPlotVisibilityChange(fn, it) },
-        )
-    }, modifier = modifier.clip(MaterialTheme.shapes.medium)
+    SwapToReveal(
+        onAnchorChanged = { anchor ->
+            Log.i("PlotsView", "onAnchorChanged: $anchor for $fn")
+            if (anchor == DragAnchors.End) {
+                onPlotRemove(fn)
+            }
+        },
+        hiddenContent = {
+            PlotControls(
+                isVisible = fn.isVisible,
+                onPlotRemove = { onPlotRemove(fn) },
+                onPlotVisibilityChange = { onPlotVisibilityChange(fn, it) },
+            )
+        },
     ) {
         PlotView(
             fn = fn,
             onPlotFormulaChange = { onPlotFormulaChange(fn, it) },
-            onPlotColorChangeRequest = { TODO("for later") },
+            onPlotColorChangeRequest = onPlotColorChangeRequest,
+            modifier = modifier,
         )
     }
-    Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 }
 
 private val MATERIAL_INPUT_HEIGHT = 50.dp
@@ -145,7 +169,7 @@ fun PlotView(
             .fillMaxHeight()
             .width(MATERIAL_COLOR_PICKER_WIDTH)
             .background(fn.color)
-            .clickable { onPlotColorChangeRequest() }) {}
+            .clickable { onPlotColorChangeRequest() })
     }
 }
 
@@ -176,7 +200,6 @@ fun PlotControls(
         )
         Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
     }
-
 }
 
 @Preview(

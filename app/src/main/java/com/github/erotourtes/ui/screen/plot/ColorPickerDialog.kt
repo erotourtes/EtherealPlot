@@ -1,5 +1,6 @@
 package com.github.erotourtes.ui.screen.plot
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,15 +30,14 @@ fun ColorPickerScreen(
     initialColor: Color,
     onColorChange: (Color) -> Unit,
     onBackPress: () -> Unit = {},
+    modifier: Modifier = Modifier,
 ) {
-    val prevColor by remember { mutableStateOf(initialColor) }
     val controller = rememberColorPickerController()
 
     Column(
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.background),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
     ) {
         HsvColorPicker(
             modifier = Modifier
@@ -45,7 +45,8 @@ fun ColorPickerScreen(
                 .height(PICKER_SIZE),
             controller = controller,
             onColorChanged = { colorEnvelope: ColorEnvelope ->
-                onColorChange(colorEnvelope.color)
+                if (colorEnvelope.fromUser)
+                    onColorChange(colorEnvelope.color)
             },
             initialColor = initialColor
         )
@@ -64,10 +65,7 @@ fun ColorPickerScreen(
             )
 
             Button(
-                onClick = {
-                    onColorChange(prevColor)
-                    onBackPress()
-                },
+                onClick = { onBackPress() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(MaterialTheme.spacing.medium),
