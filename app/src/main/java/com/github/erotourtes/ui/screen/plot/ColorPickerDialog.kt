@@ -1,7 +1,6 @@
-package com.github.erotourtes.ui.screen.canvas
+package com.github.erotourtes.ui.screen.plot
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*

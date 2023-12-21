@@ -1,5 +1,6 @@
-package com.github.erotourtes.drawing
+package com.github.erotourtes.ui.screen.plot.drawing
 
+import android.util.Log
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -21,7 +22,7 @@ fun CanvasView(
         MaterialTheme.colorScheme.onBackground.toArgb(),
     )
     AndroidView(
-        factory = { context -> CanvasViewNativeView(context) },
+        factory = { context -> Log.i("CanvasView", "Creating new native view"); CanvasViewNativeView(context) },
         modifier = modifier
     ) { view ->
         view.setColors(colorScheme)

@@ -1,4 +1,4 @@
-package com.github.erotourtes.ui.screen.canvas
+package com.github.erotourtes.ui.screen.plot
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi

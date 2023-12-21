@@ -1,4 +1,4 @@
-package com.github.erotourtes.ui.screen.canvas
+package com.github.erotourtes.ui.screen.plot
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CornerSize
@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.github.erotourtes.drawing.CanvasView
+import com.github.erotourtes.ui.screen.plot.drawing.CanvasView
 import com.github.erotourtes.model.PlotUIState
 import com.github.erotourtes.model.PlotViewModel
 import com.github.erotourtes.ui.theme.AppTheme

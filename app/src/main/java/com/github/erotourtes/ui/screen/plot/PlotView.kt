@@ -1,4 +1,4 @@
-package com.github.erotourtes.ui.screen.canvas
+package com.github.erotourtes.ui.screen.plot
 
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi

@@ -1,4 +1,4 @@
-package com.github.erotourtes.drawing
+package com.github.erotourtes.ui.screen.plot.drawing
 
 import android.annotation.SuppressLint
 import android.content.Context
