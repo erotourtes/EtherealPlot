@@ -24,15 +24,15 @@ fun CanvasScreen(
     // TODO: brainstorm this
     val plotState by plotViewModel.plotUIState.collectAsState()
 
-    CanvasLayout(
-        plotState = plotState,
-        onPlotFormulaChange = plotViewModel::changePlotFormula,
-        onPlotHideStateChange = plotViewModel::changeHideState,
-        onPlotRemove = plotViewModel::removePlot,
-        onPlotColorChange = plotViewModel::changeColor,
-        onPlotNotValid = { plotViewModel.changePlotValidity(it, false) },
-        onPlotCreate = { plotViewModel.createNew()}
-    )
+//    CanvasLayout(
+//        plotState = plotState,
+//        onPlotFormulaChange = plotViewModel::changePlotFormula,
+//        onPlotHideStateChange = plotViewModel::changeHideState,
+//        onPlotRemove = plotViewModel::removePlot,
+//        onPlotColorChange = plotViewModel::changeColor,
+//        onPlotNotValid = { plotViewModel.changePlotValidity(it, false) },
+//        onPlotCreate = { plotViewModel.createNew()}
+//    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
