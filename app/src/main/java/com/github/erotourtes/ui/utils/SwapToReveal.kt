@@ -93,7 +93,7 @@ fun SwapToReveal(
 
 @Preview
 @Composable
-fun SwapPreview() {
+private fun SwapPreview() {
     val height by remember {
         mutableStateOf(150.dp)
     }

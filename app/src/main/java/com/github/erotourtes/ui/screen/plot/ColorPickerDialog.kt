@@ -80,7 +80,7 @@ fun ColorPickerScreen(
     showBackground = true,
 )
 @Composable
-fun ColorPickerPreview() {
+private fun ColorPickerPreview() {
     AppTheme {
         Surface(color = MaterialTheme.colorScheme.error) {
             ColorPickerScreen(

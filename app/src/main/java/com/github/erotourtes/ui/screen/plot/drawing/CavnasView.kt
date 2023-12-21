@@ -35,6 +35,6 @@ fun CanvasView(
     showBackground = true
 )
 @Composable
-fun Preview() {
+private fun Preview() {
     CanvasView(dumpPlotUIStates, {})
 }

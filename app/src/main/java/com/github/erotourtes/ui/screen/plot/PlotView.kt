@@ -210,7 +210,7 @@ fun PlotControls(
     showBackground = true, name = "PlotView Preview"
 )
 @Composable
-fun PlotViewPreview() {
+private fun PlotViewPreview() {
     AppTheme {
         PlotsView(
             fns = listOf(

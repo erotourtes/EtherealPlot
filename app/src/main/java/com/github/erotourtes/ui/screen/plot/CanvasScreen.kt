@@ -74,7 +74,7 @@ fun CanvasLayout(
     name = "Home Preview"
 )
 @Composable
-fun HomePreview() {
+private fun HomePreview() {
     AppTheme {
         Surface(color = MaterialTheme.colorScheme.error) {
             CanvasScreen()
