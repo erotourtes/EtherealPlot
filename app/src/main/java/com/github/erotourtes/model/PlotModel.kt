@@ -97,7 +97,7 @@ class PlotViewModel : ViewModel() {
         plotUIState: PlotUIState,
         update: PlotUIState.() -> PlotUIState
     ) {
-        val index = _plotUIState.value.indexOf(plotUIState)
+        val index = _plotUIState.value.indexOfFirst { it.uuid == plotUIState.uuid }
         if (isInvalidIndex(index)) return
         _plotUIState.update { list ->
             val updated = list.toMutableList()
