@@ -36,7 +36,7 @@ fun PlotsView(
 ) {
     Box {
         LazyColumn(modifier = modifier.fillMaxWidth()) {
-            items(fns, key = { it.uuid }) { fn ->
+            items(fns, PlotUIState::uuid) { fn ->
                 SwappablePlotView(
                     fn,
                     onPlotRemove,

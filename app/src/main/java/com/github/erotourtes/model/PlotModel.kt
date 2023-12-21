@@ -24,7 +24,7 @@ data class PlotUIState(
 
 class PlotViewModel : ViewModel() {
     // Jetpack compose doesn't detect changes if list is modified in place
-    private val _plotUIState = MutableStateFlow<List<PlotUIState>>(mutableListOf())
+    private val _plotUIState = MutableStateFlow<List<PlotUIState>>(listOf())
     val plotUIState = _plotUIState.asStateFlow()
 
     init {

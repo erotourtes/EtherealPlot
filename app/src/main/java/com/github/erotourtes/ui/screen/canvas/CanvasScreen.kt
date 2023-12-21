@@ -1,6 +1,5 @@
 package com.github.erotourtes.ui.screen.canvas
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.*
@@ -24,15 +23,15 @@ fun CanvasScreen(
     // TODO: brainstorm this
     val plotState by plotViewModel.plotUIState.collectAsState()
 
-//    CanvasLayout(
-//        plotState = plotState,
-//        onPlotFormulaChange = plotViewModel::changePlotFormula,
-//        onPlotHideStateChange = plotViewModel::changeHideState,
-//        onPlotRemove = plotViewModel::removePlot,
-//        onPlotColorChange = plotViewModel::changeColor,
-//        onPlotNotValid = { plotViewModel.changePlotValidity(it, false) },
-//        onPlotCreate = { plotViewModel.createNew()}
-//    )
+    CanvasLayout(
+        plotState = plotState,
+        onPlotFormulaChange = plotViewModel::changePlotFormula,
+        onPlotHideStateChange = plotViewModel::changeHideState,
+        onPlotRemove = plotViewModel::removePlot,
+        onPlotColorChange = plotViewModel::changeColor,
+        onPlotNotValid = { plotViewModel.changePlotValidity(it, false) },
+        onPlotCreate = { plotViewModel.createNew() }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,7 +48,6 @@ fun CanvasLayout(
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState()
     BottomSheetScaffold(
-        modifier = modifier.height(600.dp),
         scaffoldState = scaffoldState,
         sheetContent = {
             PlotsView(
@@ -59,13 +57,15 @@ fun CanvasLayout(
                 onPlotRemove = onPlotRemove,
                 onPlotColorChange = onPlotColorChange,
                 onPlotCreate = onPlotCreate,
-                modifier = Modifier.padding(MaterialTheme.spacing.medium).defaultMinSize(minHeight = 600.dp)
+                modifier = Modifier
+                    .padding(MaterialTheme.spacing.medium)
+                    .defaultMinSize(minHeight = 600.dp)
             )
         },
         sheetShape = MaterialTheme.shapes.large.copy(bottomStart = CornerSize(0), bottomEnd = CornerSize(0)),
         sheetContentColor = MaterialTheme.colorScheme.onSurface,
     ) {
-//        CanvasView(plotState, onPlotNotValid, modifier)
+        CanvasView(plotState, onPlotNotValid, modifier)
     }
 }
 
