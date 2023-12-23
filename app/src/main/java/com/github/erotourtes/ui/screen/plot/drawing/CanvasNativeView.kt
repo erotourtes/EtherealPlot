@@ -299,13 +299,15 @@ class CanvasViewNativeView @JvmOverloads constructor(
                 val scaleFactor = detector.scaleFactor
 //                matrixCamera.postScale(scaleFactor, scaleFactor, detector.focusX, detector.focusY)
                 updateScaleFactor(scaleFactor)
-                invalidate()
                 return true
             }
         })
 
     private fun updateScaleFactor(scaleFactor: Float) {
-        this.scaleFactor *= scaleFactor
+        val scaled = this.scaleFactor * scaleFactor
+        if (scaled > 30f) return // scale when text becomes unreadable, though it is scaled down
+
+        this.scaleFactor = scaled
         paint.textSize /= scaleFactor
         paint.strokeWidth /= scaleFactor
         invalidate()
