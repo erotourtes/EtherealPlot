@@ -138,10 +138,11 @@ class CanvasViewNativeView @JvmOverloads constructor(
         var xCur = left.toDouble()
         val xEnd = right.toDouble()
 
+        var yCur = fn.setVariable("x", xCur / PIXELS_PER_UNIT).evalOrNull { it * PIXELS_PER_UNIT }
+
         while (xCur < xEnd) {
             val xNext = xCur + step
 
-            val yCur = fn.setVariable("x", xCur / PIXELS_PER_UNIT).evalOrNull { it * PIXELS_PER_UNIT }
             val yNext = fn.setVariable("x", xNext / PIXELS_PER_UNIT).evalOrNull { it * PIXELS_PER_UNIT }
 
             if (yCur == null || yNext == null) return false
@@ -151,6 +152,7 @@ class CanvasViewNativeView @JvmOverloads constructor(
             )
 
             xCur = xNext
+            yCur = yNext
         }
 
         return true
