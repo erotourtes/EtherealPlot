@@ -147,6 +147,12 @@ class CanvasViewNativeView @JvmOverloads constructor(
 
             if (yCur == null || yNext == null) return false
 
+            if (isAsymptote(canvas, yCur, yNext)) {
+                xCur = xNext
+                yCur = yNext
+                continue
+            }
+
             canvas.drawLine(
                 xCur.toFloat(), yCur.toFloat(), xNext.toFloat(), yNext.toFloat(), paint
             )
@@ -156,6 +162,13 @@ class CanvasViewNativeView @JvmOverloads constructor(
         }
 
         return true
+    }
+
+    private fun isAsymptote(canvas: Canvas, yCur: Double, yNext: Double): Boolean {
+        val (_, top, _, bottom) = canvas.clipBounds
+        val isYCurOutside = yCur < top || yCur > bottom
+        val isYNextOutside = yNext < top || yNext > bottom
+        return isYCurOutside || isYNextOutside
     }
 
     private fun drawGrid() {
