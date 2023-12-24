@@ -158,30 +158,58 @@ class CanvasViewNativeView @JvmOverloads constructor(
 
     private fun drawGrid() {
         recalculateGridStep()
-
         val (left, top, right, bottom) = canvas.clipBounds
+
         val gridStep = 1 * PIXELS_PER_UNIT
 
         val gridScale = gridStep * curStepMultiplier
         val mainEvery = 5
 
-        var x = left - left % gridScale + gridScale
-        while (x < right) {
-            val isMain = x.absoluteValue % (gridScale * mainEvery) == 0f
+        withXGridStep(left, right, gridScale, mainEvery) { x, isMain ->
             paint.forGrid(isMain) {
                 canvas.drawLine(x, top.toFloat(), x, bottom.toFloat(), this)
-                if (isMain) writeTextXAxis(x, bottom, top) // revere top and bottom because of inverted Y axis
             }
-            x += gridScale
         }
 
-        var y = top - top % gridScale + gridScale
-        while (y < bottom) {
-            val isMain = y.absoluteValue % (gridScale * mainEvery) == 0f
+        withYGridStep(top, bottom, gridScale, mainEvery) { y, isMain ->
             paint.forGrid(isMain) {
                 canvas.drawLine(left.toFloat(), y, right.toFloat(), y, this)
                 if (isMain) writeTextYAxis(y, left, right)
             }
+        }
+
+        // Needs to draw separately because otherwise y grid lines are over the text
+        withXGridStep(left, right, gridScale, mainEvery) { x, isMain ->
+            if (isMain) writeTextXAxis(x, bottom, top) // revere top and bottom because of inverted Y axis
+        }
+    }
+
+    private inline fun withXGridStep(
+        left: Int,
+        right: Int,
+        gridScale: Float,
+        mainEvery: Int,
+        block: (Float, Boolean) -> Unit
+    ) {
+        var x = left - left % gridScale + gridScale
+        while (x < right) {
+            val isMain = x.absoluteValue % (gridScale * mainEvery) == 0f
+            block(x, isMain)
+            x += gridScale
+        }
+    }
+
+    private inline fun withYGridStep(
+        top: Int,
+        bottom: Int,
+        gridScale: Float,
+        mainEvery: Int,
+        block: (Float, Boolean) -> Unit
+    ) {
+        var y = top - top % gridScale + gridScale
+        while (y < bottom) {
+            val isMain = y.absoluteValue % (gridScale * mainEvery) == 0f
+            block(y, isMain)
             y += gridScale
         }
     }
