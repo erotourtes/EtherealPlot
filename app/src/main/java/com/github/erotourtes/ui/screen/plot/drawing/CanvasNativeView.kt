@@ -252,7 +252,7 @@ class CanvasViewNativeView @JvmOverloads constructor(
         val text = formatFloatTextForAxis((curX / PIXELS_PER_UNIT).toString())
         val textBound = Rect().apply { paint.getTextBounds(text, 0, text.length, this) }
         val textX = curX - textBound.width()
-        val textTopCorner = 0f
+        val textTopCorner = -textBound.height() * 0.1f
         val textBottomCorner = textTopCorner - textBound.height().toFloat()
 
         var textYOffset = 0f
