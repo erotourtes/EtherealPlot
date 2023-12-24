@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
@@ -191,7 +190,7 @@ class CanvasViewNativeView @JvmOverloads constructor(
         mainEvery: Int,
         block: (Float, Boolean) -> Unit
     ) {
-        var x = left - left % gridScale + gridScale
+        var x = left - left % gridScale
         while (x < right) {
             val isMain = x.absoluteValue % (gridScale * mainEvery) == 0f
             block(x, isMain)
@@ -206,7 +205,7 @@ class CanvasViewNativeView @JvmOverloads constructor(
         mainEvery: Int,
         block: (Float, Boolean) -> Unit
     ) {
-        var y = top - top % gridScale + gridScale
+        var y = top - top % gridScale
         while (y < bottom) {
             val isMain = y.absoluteValue % (gridScale * mainEvery) == 0f
             block(y, isMain)

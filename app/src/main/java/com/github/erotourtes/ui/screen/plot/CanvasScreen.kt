@@ -23,16 +23,16 @@ fun CanvasScreen(
     // TODO: brainstorm this
     val plotState by plotViewModel.plotUIState.collectAsState()
 
-    CanvasLayout(
-        plotState = plotState,
+    CanvasLayout(plotState = plotState,
         onPlotFormulaChange = plotViewModel::changePlotFormulaSync,
         onPlotHideStateChange = plotViewModel::changeHideState,
         onPlotRemove = plotViewModel::removePlotSync,
         onPlotColorChange = plotViewModel::changeColor,
         onPlotNotValid = { plotViewModel.changePlotValidity(it, false) },
-        onPlotCreate = { plotViewModel.createNewSync() }
-    )
+        onPlotCreate = { plotViewModel.createNewSync() })
 }
+
+val BOTTOM_SHEET_SCAFFOLD_HEIGHT = 56.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +48,7 @@ fun CanvasLayout(
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState()
     BottomSheetScaffold(
-        sheetPeekHeight = 0.dp,
+        sheetPeekHeight = BOTTOM_SHEET_SCAFFOLD_HEIGHT,
         scaffoldState = scaffoldState,
         sheetContent = {
             PlotsView(
@@ -66,19 +66,17 @@ fun CanvasLayout(
         sheetShape = MaterialTheme.shapes.large.copy(bottomStart = CornerSize(0), bottomEnd = CornerSize(0)),
         sheetContentColor = MaterialTheme.colorScheme.onSurface,
     ) {
-        CanvasView(plotState, onPlotNotValid, modifier)
+        CanvasView(plotState, onPlotNotValid, modifier.padding(bottom = BOTTOM_SHEET_SCAFFOLD_HEIGHT))
     }
 }
 
 @Preview(
-    showBackground = true,
-    name = "Home Preview"
+    showBackground = true, name = "Home Preview"
 )
 @Composable
 private fun CanvasLayoutPreview() {
     AppTheme {
-        CanvasLayout(
-            plotState = mockPlots,
+        CanvasLayout(plotState = mockPlots,
             onPlotFormulaChange = { _, _ -> },
             onPlotHideStateChange = { _, _ -> },
             onPlotRemove = { },
