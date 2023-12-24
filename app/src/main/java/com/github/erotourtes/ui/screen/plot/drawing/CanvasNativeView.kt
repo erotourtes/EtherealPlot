@@ -44,6 +44,8 @@ class CanvasViewNativeView @JvmOverloads constructor(
     private var fns: List<PlotUIState> = emptyList()
     private val cachedParsers: MutableMap<String, MathParser> = HashMap()
 
+    private var onPlotNotValid: ((PlotUIState) -> Unit)? = null
+
     // The default color of paint is Colors::axes
     private val paint = Paint().apply {
         isAntiAlias = true
@@ -84,24 +86,6 @@ class CanvasViewNativeView @JvmOverloads constructor(
             drawAxis()
             drawFns()
         }
-    }
-
-    fun setColors(c: Colors) {
-        colors = c
-        paint.color = c.axes
-        invalidate()
-    }
-
-    fun setFns(newFns: List<PlotUIState>) {
-        Log.i("CanvasView", "setting fns to $newFns")
-        fns = newFns
-        invalidate()
-        Log.i("CanvasView", "invalidating")
-    }
-
-    private var onPlotNotValid: ((PlotUIState) -> Unit)? = null
-    fun setOnPlotNotValid(block: (PlotUIState) -> Unit) {
-        onPlotNotValid = block
     }
 
     private fun drawBG() {
@@ -186,7 +170,7 @@ class CanvasViewNativeView @JvmOverloads constructor(
             val isMain = x.absoluteValue % (gridScale * mainEvery) == 0f
             paint.forGrid(isMain) {
                 canvas.drawLine(x, top.toFloat(), x, bottom.toFloat(), this)
-                if (isMain) writeTextXAxis(x)
+                if (isMain) writeTextXAxis(x, bottom, top) // revere top and bottom because of inverted Y axis
             }
             x += gridScale
         }
@@ -196,7 +180,7 @@ class CanvasViewNativeView @JvmOverloads constructor(
             val isMain = y.absoluteValue % (gridScale * mainEvery) == 0f
             paint.forGrid(isMain) {
                 canvas.drawLine(left.toFloat(), y, right.toFloat(), y, this)
-                if (isMain) writeTextYAxis(y)
+                if (isMain) writeTextYAxis(y, left, right)
             }
             y += gridScale
         }
@@ -234,21 +218,41 @@ class CanvasViewNativeView @JvmOverloads constructor(
         return text.toDouble().toBigDecimal().toEngineeringString()
     }
 
-    private fun writeTextXAxis(curX: Float) {
+    private fun writeTextXAxis(curX: Float, cameraTop: Int, cameraBottom: Int) {
+        if (cameraTop < cameraBottom) throw IllegalArgumentException("cameraTop < cameraBottom")
+
         val text = formatFloatTextForAxis((curX / PIXELS_PER_UNIT).toString())
         val textBound = Rect().apply { paint.getTextBounds(text, 0, text.length, this) }
         val textX = curX - textBound.width()
-        val textY = -textBound.height().toFloat()
-        canvas.drawTextInRightDirection(text, textX, textY, paint)
+        val textTopCorner = 0f
+        val textBottomCorner = textTopCorner - textBound.height().toFloat()
+
+        var textYOffset = 0f
+        if (textTopCorner > cameraTop) textYOffset = -(textTopCorner - cameraTop) - textTopCorner * 1.5f
+        if (textBottomCorner < cameraBottom) textYOffset = cameraBottom - textBottomCorner
+
+        if (curX == 0f) textYOffset = 0f // don't move 0 to the left (it is already in the center)
+
+        paint.withColor(colors.text) {
+            canvas.drawTextInRightDirection(text, textX, textTopCorner - textBound.height() / 2f + textYOffset, paint)
+        }
     }
 
-    private fun writeTextYAxis(curY: Float) {
+    private fun writeTextYAxis(curY: Float, cameraLeft: Int, cameraRight: Int) {
         if (curY == 0f) return
         val text = formatFloatTextForAxis((curY / PIXELS_PER_UNIT).toString())
         val textBound = Rect().apply { paint.getTextBounds(text, 0, text.length, this) }
-        val textX = -textBound.width().toFloat()
         val textY = curY + textBound.height()
-        canvas.drawTextInRightDirection(text, textX, textY, paint)
+        val leftTextCorner = -textBound.width().toFloat()
+        val rightTextCorner = 0f
+
+        var textXOffset = 0f
+        if (leftTextCorner < cameraLeft) textXOffset = cameraLeft - leftTextCorner * 1.5f
+        if (rightTextCorner > cameraRight) textXOffset = -(rightTextCorner - cameraRight)
+
+        paint.withColor(colors.text) {
+            canvas.drawTextInRightDirection(text, leftTextCorner + textXOffset, textY, paint)
+        }
     }
 
     private fun Paint.forGrid(isMain: Boolean, block: Paint.() -> Unit) {
@@ -278,15 +282,20 @@ class CanvasViewNativeView @JvmOverloads constructor(
                     endPoint = PointF(event.x, event.y)
                     val dx = endPoint.x - startPoint.x
                     val dy = endPoint.y - startPoint.y
-                    matrixCamera.postTranslate(dx, dy)
                     // update start point for next move if not updated then the camera will apply wrong dx, dy (it would accumulate)
                     startPoint.set(endPoint)
-                    invalidate()
+
+                    moveCamera(dx, dy)
                 }
             }
 
             true
         }
+    }
+
+    private fun moveCamera(dx: Float, dy: Float) {
+        matrixCamera.postTranslate(dx, dy)
+        invalidate()
     }
 
     private fun scaleCameraListener(): OnTouchListener = OnTouchListener { _, event ->
@@ -312,5 +321,18 @@ class CanvasViewNativeView @JvmOverloads constructor(
         paint.textSize /= scaleFactor
         paint.strokeWidth /= scaleFactor
         invalidate()
+    }
+
+    fun set(c: Colors, newFns: List<PlotUIState>) {
+        colors = c
+        paint.color = c.axes
+
+        fns = newFns
+
+        invalidate()
+    }
+
+    fun setOnPlotNotValid(block: (PlotUIState) -> Unit) {
+        onPlotNotValid = block
     }
 }

@@ -48,6 +48,7 @@ fun CanvasLayout(
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState()
     BottomSheetScaffold(
+        sheetPeekHeight = 0.dp,
         scaffoldState = scaffoldState,
         sheetContent = {
             PlotsView(
