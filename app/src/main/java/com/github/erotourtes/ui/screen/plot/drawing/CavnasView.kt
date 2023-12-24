@@ -22,8 +22,7 @@ fun CanvasView(
         factory = { context -> Log.i("CanvasView", "Creating new native view"); CanvasViewNativeView(context) },
         modifier = modifier
     ) { view ->
-        view.set(colorScheme, plotState)
-        view.setOnPlotNotValid(onPlotNotValid)
+        view.set(colorScheme, plotState, onPlotNotValid)
     }
 }
 

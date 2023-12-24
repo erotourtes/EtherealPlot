@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
@@ -116,7 +117,7 @@ class CanvasViewNativeView @JvmOverloads constructor(
      * @return true if the function was drawn successfully, false otherwise
      * */
     private fun drawFn(fn: MathParser): Boolean {
-        val (left, _, right, _) = canvas.clipBounds
+        val (left, top, right, bottom) = canvas.clipBounds
 
         val step = 1f * curStepMultiplier
         var xCur = left.toDouble()
@@ -131,7 +132,16 @@ class CanvasViewNativeView @JvmOverloads constructor(
 
             if (yCur == null || yNext == null) return false
 
-            if (isAsymptote(canvas, yCur, yNext)) {
+            if (isAsymptote(canvas, yCur)) {
+                val xPrev = xCur - step
+                val yPrev = fn.setVariable("x", xPrev / PIXELS_PER_UNIT).evalOrNull { it * PIXELS_PER_UNIT }
+                if (yPrev == null) return false
+                val isAsymptoteDown = yPrev > yCur
+                val yAsymptote = if (isAsymptoteDown) bottom else top
+
+                Log.i("CanvasViewNativeView", "Asymptote at x = $xCur")
+
+                canvas.drawLine(xCur.toFloat(), yCur.toFloat(), xCur.toFloat(), yAsymptote.toFloat(), paint)
                 xCur = xNext
                 yCur = yNext
                 continue
@@ -350,16 +360,14 @@ class CanvasViewNativeView @JvmOverloads constructor(
         invalidate()
     }
 
-    fun set(c: Colors, newFns: List<PlotUIState>) {
+    fun set(c: Colors, newFns: List<PlotUIState>, onPlotNotValid: (PlotUIState) -> Unit) {
         colors = c
         paint.color = c.axes
 
         fns = newFns
 
-        invalidate()
-    }
+        this.onPlotNotValid = onPlotNotValid
 
-    fun setOnPlotNotValid(block: (PlotUIState) -> Unit) {
-        onPlotNotValid = block
+        invalidate()
     }
 }
