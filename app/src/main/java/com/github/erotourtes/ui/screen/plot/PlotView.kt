@@ -1,6 +1,5 @@
 package com.github.erotourtes.ui.screen.plot
 
-import android.util.Log
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,9 +19,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.github.erotourtes.model.PlotUIState
+import com.github.erotourtes.model.mockPlots
 import com.github.erotourtes.ui.theme.AppTheme
 import com.github.erotourtes.ui.theme.spacing
-import com.github.erotourtes.ui.utils.DragAnchors
 import com.github.erotourtes.ui.utils.ExpandableCard
 import com.github.erotourtes.ui.utils.SwapToReveal
 
@@ -38,7 +37,7 @@ fun PlotsView(
 ) {
     Box {
         LazyColumn(modifier = modifier.fillMaxWidth()) {
-            items(fns, PlotUIState::uuid) { fn ->
+            items(fns, PlotUIState::id) { fn ->
                 OpenablePlotView(
                     fn = fn,
                     onPlotRemove = onPlotRemove,
@@ -115,7 +114,7 @@ private fun SwappablePlotView(
 ) {
     // Another solution would be to use SwipeToDismiss
     SwapToReveal(
-        onRemove = { onPlotRemove(fn)},
+        onRemove = { onPlotRemove(fn) },
         hiddenContent = {
             PlotControls(
                 isVisible = fn.isVisible,
@@ -213,11 +212,7 @@ fun PlotControls(
 private fun PlotViewPreview() {
     AppTheme {
         PlotsView(
-            fns = listOf(
-                PlotUIState(MaterialTheme.colorScheme.primary, "x^2"),
-                PlotUIState(MaterialTheme.colorScheme.secondary, "sin(5x) + x^2"),
-                PlotUIState(MaterialTheme.colorScheme.tertiary, "2x^2"),
-            ),
+            fns = mockPlots,
             onPlotFormulaChange = { _, _ -> },
             onPlotVisibilityChange = { _, _ -> },
             onPlotRemove = { },

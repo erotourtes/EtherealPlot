@@ -93,6 +93,7 @@ class CanvasViewNativeView @JvmOverloads constructor(
     }
 
     fun setFns(newFns: List<PlotUIState>) {
+        Log.i("CanvasView", "setting fns to $newFns")
         fns = newFns
         invalidate()
         Log.i("CanvasView", "invalidating")

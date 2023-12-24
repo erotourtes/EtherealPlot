@@ -5,6 +5,8 @@ import android.graphics.Paint
 import android.graphics.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.core.graphics.withSave
+import com.github.erotourtes.model.PlotUIState
+import com.github.erotourtes.room.plot.Plot
 import kotlin.random.Random
 
 /**
@@ -35,3 +37,11 @@ fun Color.Companion.random(): Color {
         alpha = 1f
     )
 }
+
+fun Plot.toPlotUIState() = PlotUIState(
+    color = Color(color),
+    function = function,
+    isVisible = isVisible,
+    isValid = isValid,
+    id = id,
+)

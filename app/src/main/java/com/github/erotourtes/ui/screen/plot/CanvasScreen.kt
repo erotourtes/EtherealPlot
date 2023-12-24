@@ -8,29 +8,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.erotourtes.ui.screen.plot.drawing.CanvasView
 import com.github.erotourtes.model.PlotUIState
 import com.github.erotourtes.model.PlotViewModel
+import com.github.erotourtes.model.mockPlots
 import com.github.erotourtes.ui.theme.AppTheme
 import com.github.erotourtes.ui.theme.spacing
 
 
 @Composable
 fun CanvasScreen(
-    plotViewModel: PlotViewModel = viewModel(),
+    plotViewModel: PlotViewModel
 ) {
     // TODO: brainstorm this
     val plotState by plotViewModel.plotUIState.collectAsState()
 
     CanvasLayout(
         plotState = plotState,
-        onPlotFormulaChange = plotViewModel::changePlotFormula,
+        onPlotFormulaChange = plotViewModel::changePlotFormulaSync,
         onPlotHideStateChange = plotViewModel::changeHideState,
-        onPlotRemove = plotViewModel::removePlot,
+        onPlotRemove = plotViewModel::removePlotSync,
         onPlotColorChange = plotViewModel::changeColor,
         onPlotNotValid = { plotViewModel.changePlotValidity(it, false) },
-        onPlotCreate = { plotViewModel.createNew() }
+        onPlotCreate = { plotViewModel.createNewSync() }
     )
 }
 
@@ -74,10 +74,15 @@ fun CanvasLayout(
     name = "Home Preview"
 )
 @Composable
-private fun HomePreview() {
+private fun CanvasLayoutPreview() {
     AppTheme {
-        Surface(color = MaterialTheme.colorScheme.error) {
-            CanvasScreen()
-        }
+        CanvasLayout(
+            plotState = mockPlots,
+            onPlotFormulaChange = { _, _ -> },
+            onPlotHideStateChange = { _, _ -> },
+            onPlotRemove = { },
+            onPlotColorChange = { _, _ -> },
+            onPlotNotValid = { _ -> },
+            onPlotCreate = {})
     }
 }
