@@ -102,8 +102,8 @@ class CanvasViewNativeView @JvmOverloads constructor(
                 MathParser(it.function)
             }
             paint.withColor(it.color.toArgb()) {
-                val isSuccess = drawFn(parser)
-                /* Can't call onPlotNotValid directly because it will throw an exception */
+                val isSuccess =
+                    drawFn(parser)/* Can't call onPlotNotValid directly because it will throw an exception */
                 if (!isSuccess) invalidatedFns.add(it)
             }
         }
@@ -117,33 +117,51 @@ class CanvasViewNativeView @JvmOverloads constructor(
      * @return true if the function was drawn successfully, false otherwise
      * */
     private fun drawFn(fn: MathParser): Boolean {
-        val (left, top, right, bottom) = canvas.clipBounds
+        var (left, top, right, bottom) = canvas.clipBounds
+        top = bottom.also { bottom = top }
+        if (top < bottom) throw IllegalArgumentException("top < bottom")
 
         val step = 1f * curStepMultiplier
         var xCur = left.toDouble()
         val xEnd = right.toDouble()
 
-        var yCur = fn.setVariable("x", xCur / PIXELS_PER_UNIT).evalOrNull { it * PIXELS_PER_UNIT }
+        var yCur = fn.evalInPixels(xCur) ?: return false
 
         while (xCur < xEnd) {
             val xNext = xCur + step
 
-            val yNext = fn.setVariable("x", xNext / PIXELS_PER_UNIT).evalOrNull { it * PIXELS_PER_UNIT }
+            val yNext = fn.evalInPixels(xNext) ?: return false
+            val yNextNext = fn.evalInPixels(xNext + step) ?: return false
 
-            if (yCur == null || yNext == null) return false
+            // check for asymptote
+            // TODO: optimise and make it work for all functions
+            // Currently it has a bug with tan(x)
+            val dy = yNext - yCur
+            val tan = dy / step
+            val isAsymptote = tan.absoluteValue > 1000
 
-            if (isAsymptote(canvas, yCur)) {
-                val xPrev = xCur - step
-                val yPrev = fn.setVariable("x", xPrev / PIXELS_PER_UNIT).evalOrNull { it * PIXELS_PER_UNIT }
-                if (yPrev == null) return false
-                val isAsymptoteDown = yPrev > yCur
-                val yAsymptote = if (isAsymptoteDown) bottom else top
+            val tanNext = (yNextNext - yNext) / (step)
 
-                Log.i("CanvasViewNativeView", "Asymptote at x = $xCur")
-
-                canvas.drawLine(xCur.toFloat(), yCur.toFloat(), xCur.toFloat(), yAsymptote.toFloat(), paint)
+            if (isAsymptote && tan * tanNext < 0) {
                 xCur = xNext
                 yCur = yNext
+                continue
+            } else if (isAsymptote) {
+                val isToDown = tan > tanNext;
+                val yAsymptote = if (isToDown) bottom else top
+
+//                Log.i(
+//                    "CanvasViewNativeView",
+//                    "$tan $tanNext Asymptote at x = ${xCur / PIXELS_PER_UNIT}, y = ${yCur / PIXELS_PER_UNIT}"
+//                )
+
+                canvas.drawLine(
+                    xCur.toFloat(), yCur.toFloat(), xCur.toFloat(), yAsymptote.toFloat(), paint
+                )
+
+                xCur = xNext
+                yCur = yNext
+
                 continue
             }
 
@@ -156,13 +174,6 @@ class CanvasViewNativeView @JvmOverloads constructor(
         }
 
         return true
-    }
-
-    private fun isAsymptote(canvas: Canvas, yCur: Double, yNext: Double): Boolean {
-        val (_, top, _, bottom) = canvas.clipBounds
-        val isYCurOutside = yCur < top || yCur > bottom
-        val isYNextOutside = yNext < top || yNext > bottom
-        return isYCurOutside || isYNextOutside
     }
 
     private fun drawGrid() {
@@ -194,11 +205,7 @@ class CanvasViewNativeView @JvmOverloads constructor(
     }
 
     private inline fun withXGridStep(
-        left: Int,
-        right: Int,
-        gridScale: Float,
-        mainEvery: Int,
-        block: (Float, Boolean) -> Unit
+        left: Int, right: Int, gridScale: Float, mainEvery: Int, block: (Float, Boolean) -> Unit
     ) {
         var x = left - left % gridScale
         while (x < right) {
@@ -209,11 +216,7 @@ class CanvasViewNativeView @JvmOverloads constructor(
     }
 
     private inline fun withYGridStep(
-        top: Int,
-        bottom: Int,
-        gridScale: Float,
-        mainEvery: Int,
-        block: (Float, Boolean) -> Unit
+        top: Int, bottom: Int, gridScale: Float, mainEvery: Int, block: (Float, Boolean) -> Unit
     ) {
         var y = top - top % gridScale
         while (y < bottom) {
@@ -370,4 +373,7 @@ class CanvasViewNativeView @JvmOverloads constructor(
 
         invalidate()
     }
+
+    private fun MathParser.evalInPixels(x: Double): Double? =
+        setVariable("x", x / PIXELS_PER_UNIT).evalOrNull { it * PIXELS_PER_UNIT }
 }
