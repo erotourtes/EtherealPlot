@@ -1,9 +1,11 @@
 package com.github.erotourtes.ui.screen.canvas.drawing
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
@@ -20,7 +22,7 @@ fun CanvasView(
     )
     AndroidView(
         factory = { context -> Log.i("CanvasView", "Creating new native view"); CanvasViewNativeView(context) },
-        modifier = modifier
+        modifier = modifier.clipToBounds()
     ) { view ->
         view.set(colorScheme, plotState, onPlotNotValid)
     }
