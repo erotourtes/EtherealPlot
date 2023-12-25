@@ -50,7 +50,8 @@ fun MainLayout(
     }, floatingActionButton = {
         FloatingActionButton(onClick = onGoToPlots, content = {
             Icon(
-                imageVector = Icons.Default.Add, contentDescription = stringResource(R.string.plots)
+                imageVector = Icons.Default.Add,
+                contentDescription = "Create new plots",
             )
         })
     }, content = {

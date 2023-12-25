@@ -1,4 +1,3 @@
 <resources>
-    <string name="app_name">OOP-coursework</string>
-    <string name="plots">Plots</string>
+    <string name="app_name">Ethereal Plot</string>
 </resources>
