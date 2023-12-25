@@ -1,0 +1,112 @@
+\usepackage{hyperref}
+\usepackage{amsmath}
+
+\usepackage{geometry}
+\geometry{margin=1in}
+
+% Images support
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+\usepackage{subcaption}
+\usepackage{float}
+
+% Ukrainian support
+\usepackage[T2A,T1]{fontenc} % T1 for Latin characters
+\usepackage[utf8]{inputenc}
+\usepackage[english,ukrainian]{babel}
+
+% include pdf
+\usepackage[dvipsnames]{xcolor}
+\usepackage{pdfpages}
+
+% Code highlighting support
+\usepackage{listings}
+
+\lstdefinelanguage{Kotlin}{
+  comment=[l]{//},
+  commentstyle={\color{gray}\ttfamily},
+  emph={filter, first, firstOrNull, forEach, lazy, map, mapNotNull, println},
+  emphstyle={\color{OrangeRed}},
+  identifierstyle=\color{black},
+  keywords={!in, !is, abstract, actual, annotation, as, as?, break, by, catch, class, companion, const, constructor, continue, crossinline, data, delegate, do, dynamic, else, enum, expect, external, false, field, file, final, finally, for, fun, get, if, import, in, infix, init, inline, inner, interface, internal, is, lateinit, noinline, null, object, open, operator, out, override, package, param, private, property, protected, public, receiveris, reified, return, return@, sealed, set, setparam, super, suspend, tailrec, this, throw, true, try, typealias, typeof, val, var, vararg, when, where, while},
+  keywordstyle={\color{NavyBlue}\bfseries},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]",
+  morestring=[s]{"""*}{*"""},
+  ndkeywords={@Deprecated, @JvmField, @JvmName, @JvmOverloads, @JvmStatic, @JvmSynthetic, Array, Byte, Double, Float, Int, Integer, Iterable, Long, Runnable, Short, String, Any, Unit, Nothing},
+  ndkeywordstyle={\color{BurntOrange}\bfseries},
+  sensitive=true,
+  stringstyle={\color{ForestGreen}\ttfamily},
+}
+
+% Latex error \cyri unavailable in encoding T1
+\def\mybibname{\fontencoding{T2A}\selectfont
+\CYRL\cyri\cyrt\cyre\cyrr\cyra\cyrt\cyru\cyrr\cyra}
+\def\myshortname{%%%
+\fontencoding{T2A}\selectfont
+  \CYRM\cyro\cyrd\cyre\cyrl.
+  \cyri{}
+  \cyra\cyrn\cyra\cyrl\cyri\cyrz{}
+  \cyri\cyrn\cyrf\cyro\cyrr\cyrm.
+  \cyrs\cyri\cyrs\cyrt\cyre\cyrm.{}
+}
+\def\mylongname{%%%
+\fontencoding{T2A}\selectfont
+  \CYRM\cyro\cyrd\cyre\cyrl\cyri\cyrr\cyro\cyrv\cyra\cyrn\cyri\cyre{}
+  \cyri{}
+  \cyra\cyrn\cyra\cyrl\cyri\cyrz{}
+  \cyri\cyrn\cyrf\cyro\cyrr\cyrm\cyra\cyrc\cyri\cyro\cyrn\cyrn\cyrery\cyrh{}
+  \cyrs\cyri\cyrs\cyrt\cyre\cyrm{}
+}
+\def\myrecname{\fontencoding{T2A}\selectfont
+\cyrp\cyro\cyrl\cyru\cyrch\cyre\cyrn\cyra}
+\def\myvolname{\fontencoding{T2A}\selectfont
+\CYRT.}
+\def\myUDCname{\fontencoding{T2A}\selectfont
+\CYRU\CYRD\CYRK}
+
+
+% #1 - lab number
+\newcommand{\titlewithlabnum}{
+\begin{titlepage}
+  \begin{center}
+    \Large
+    
+    \textbf{
+        Міністерство освіти і науки України \\
+        Національний технічний університет України \\
+        «Київський політехнічний інститут імені Ігоря Сікорського»  \\
+        Факультет інформатики та обчислювальної техніки \\
+        Кафедра обчислювальної техніки \\
+    }
+    
+    \vspace{7\baselineskip}
+    \textbf{
+        Розрахунково-графічна робота \\
+    }
+    з дисципліни \\
+    «Об’єктно орієнтоване програмування» \\
+
+    \large
+    \vspace{7\baselineskip}
+    \begin{flushleft}
+        Виконав: \\
+        Студент групи ІМ-21 \\
+        Сірик Максим Олександрович \\
+        номер у списку групи: 22 \\
+    \end{flushleft} 
+
+    \begin{flushright}
+        Перевірив: \\
+        Порєв Віктор Миколайович \\
+    \end{flushright}    
+
+    \vfill
+    
+    \Large
+    Київ \the\year{}
+    \vspace*{-1\baselineskip}
+  \end{center}
+\end{titlepage}}
+
+\newcommand{\lstinputlistingukr}[2]{\lstinputlisting[caption=#1, escapechar=, language=Kotlin, literate={{’}{{'}}1 {а}{{\cyra}}1 {б}{{\cyrb}}1 {в}{{\cyrv}}1 {г}{{\cyrg}}1 {д}{{\cyrd}}1 {е}{{\cyre}}1 {є}{{\cyrie}}1 {ж}{{\cyrzh}}1 {з}{{\cyrz}}1 {и}{{\cyri}}1 {і}{{\cyrii}}1 {ї}{{\cyryi}}1 {й}{{\cyri}}1 {к}{{\cyrk}}1 {л}{{\cyrl}}1 {м}{{\cyrm}}1 {н}{{\cyrn}}1 {о}{{\cyro}}1 {п}{{\cyrp}}1 {р}{{\cyrr}}1 {с}{{\cyrs}}1 {т}{{\cyrt}}1 {у}{{\cyru}}1 {ф}{{\cyrf}}1 {х}{{\cyrh}}1 {ц}{{\cyrc}}1 {ч}{{\cyrch}}1 {ш}{{\cyrsh}}1 {щ}{{\cyrshch}}1 {ь}{{\cyrsftsn}}1 {ю}{{\cyryu}}1 {я}{{\cyrya}}1 {А}{{\CYRA}}1 {Б}{{\CYRB}}1 {В}{{\CYRV}}1 {Г}{{\CYRG}}1 {Д}{{\CYRD}}1 {Е}{{\CYRE}}1 {Є}{{\CYRIE}}1 {Ж}{{\CYRZH}}1 {З}{{\CYRZ}}1 {И}{{\CYRI}}1 {І}{{\CYRII}}1 {Ї}{{\CYRYI}}1 {Й}{{\CYRI}}1 {К}{{\CYRK}}1 {Л}{{\CYRL}}1 {М}{{\CYRM}}1 {Н}{{\CYRN}}1 {О}{{\CYRO}}1 {П}{{\CYRP}}1 {Р}{{\CYRR}}1 {С}{{\CYRS}}1 {Т}{{\CYRT}}1 {У}{{\CYRU}}1 {Ф}{{\CYRF}}1 {Х}{{\CYRH}}1 {Ц}{{\CYRC}}1 {Ч}{{\CYRCH}}1 {Ш}{{\CYRSH}}1 {Щ}{{\CYRSHCH}}1 {Ь}{{\CYRSFTSN}}1 {Ю}{{\CYRYU}}1 {Я}{{\CYRYA}}1 } ]{#2}}
