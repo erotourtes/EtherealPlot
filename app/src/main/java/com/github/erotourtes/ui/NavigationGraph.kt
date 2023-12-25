@@ -19,7 +19,7 @@ fun NavGraph(
 ) {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = Screen.CanvasScreen.route) {
+    NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
         composable(Screen.MainScreen.route) {
             MainScreen(
                 plotViewModel = plotViewModel,
@@ -28,7 +28,10 @@ fun NavGraph(
         }
 
         composable(Screen.CanvasScreen.route) {
-            CanvasScreen(plotViewModel = plotViewModel)
+            CanvasScreen(
+                plotViewModel = plotViewModel,
+                navController = navController
+            )
         }
     }
 }

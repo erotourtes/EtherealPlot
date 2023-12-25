@@ -102,12 +102,12 @@ class PlotViewModel(
         }
     }
 
-    fun createNewSync(color: Color = Color.random()) {
+    fun createNewSync(color: Color = Color.random(), function: String = "") {
         Log.i("PlotViewModel", "createNew: $color")
         viewModelScope.launch {
             val plot = Plot(
                 color = color.toArgb(),
-                function = "",
+                function =  function,
                 isVisible = true,
                 isValid = true,
             )
@@ -117,7 +117,7 @@ class PlotViewModel(
                 val updated = list.toMutableList()
                 updated.add(
                     PlotUIState(
-                        color = color, function = "", isVisible = true, isValid = true, id = id
+                        color = color, function = function, isVisible = true, isValid = true, id = id
                     )
                 )
                 updated
@@ -144,6 +144,12 @@ class PlotViewModel(
             val updated = list.toMutableList()
             updated[index] = updated[index].update()
             updated
+        }
+    }
+
+    fun restorePreviousSession() {
+        viewModelScope.launch {
+            _plotUIState.value = plotRepo.getPreviousPlots().map { it.toPlotUIState() }
         }
     }
 

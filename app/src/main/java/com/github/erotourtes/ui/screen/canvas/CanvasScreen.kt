@@ -1,13 +1,21 @@
 package com.github.erotourtes.ui.screen.canvas
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.github.erotourtes.ui.screen.canvas.drawing.CanvasView
 import com.github.erotourtes.model.PlotUIState
 import com.github.erotourtes.model.PlotViewModel
@@ -18,7 +26,8 @@ import com.github.erotourtes.ui.theme.spacing
 
 @Composable
 fun CanvasScreen(
-    plotViewModel: PlotViewModel
+    plotViewModel: PlotViewModel,
+    navController: NavController,
 ) {
     // TODO: brainstorm this
     val plotState by plotViewModel.plotUIState.collectAsState()
@@ -29,7 +38,8 @@ fun CanvasScreen(
         onPlotRemove = plotViewModel::removePlotSync,
         onPlotColorChange = plotViewModel::changeColor,
         onPlotNotValid = { plotViewModel.changePlotValidity(it, false) },
-        onPlotCreate = { plotViewModel.createNewSync() })
+        onPlotCreate = { plotViewModel.createNewSync() },
+        onBackPressed = { navController.popBackStack() })
 }
 
 val BOTTOM_SHEET_SCAFFOLD_HEIGHT = 56.dp
@@ -44,6 +54,7 @@ fun CanvasLayout(
     onPlotColorChange: (PlotUIState, Color) -> Unit,
     onPlotNotValid: (PlotUIState) -> Unit,
     onPlotCreate: () -> Unit,
+    onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState()
@@ -67,6 +78,20 @@ fun CanvasLayout(
         sheetContentColor = MaterialTheme.colorScheme.onSurface,
     ) {
         CanvasView(plotState, onPlotNotValid, modifier.padding(bottom = BOTTOM_SHEET_SCAFFOLD_HEIGHT))
+        Button(
+            onClick = onBackPressed,
+            shape = CircleShape,
+            contentPadding = PaddingValues(0.dp),
+            modifier = Modifier
+                .padding(MaterialTheme.spacing.medium)
+                .size(48.dp)
+
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Back to main screen",
+            )
+        }
     }
 }
 
@@ -82,6 +107,7 @@ private fun CanvasLayoutPreview() {
             onPlotRemove = { },
             onPlotColorChange = { _, _ -> },
             onPlotNotValid = { _ -> },
-            onPlotCreate = {})
+            onPlotCreate = {},
+            onBackPressed = {})
     }
 }
