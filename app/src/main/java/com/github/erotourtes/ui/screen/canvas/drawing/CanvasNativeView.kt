@@ -121,8 +121,8 @@ class CanvasViewNativeView @JvmOverloads constructor(
         if (top < bottom) throw IllegalArgumentException("top < bottom")
 
         val step = 1f * curStepMultiplier
-        var xCur = left.toDouble()
-        val xEnd = right.toDouble()
+        var xCur = left.toDouble().coerceAtLeast(fn.boundaries.first * PIXELS_PER_UNIT)
+        val xEnd = right.toDouble().coerceAtMost(fn.boundaries.second * PIXELS_PER_UNIT)
 
         var yCur = fn.evalInPixels(xCur) ?: return false
 

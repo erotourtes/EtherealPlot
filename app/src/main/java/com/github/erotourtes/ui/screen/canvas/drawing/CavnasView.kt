@@ -43,7 +43,7 @@ private fun Preview() {
         ),
         PlotUIState(
             color = androidx.compose.ui.graphics.Color.Blue,
-            function = "cos(x)",
+            function = "tan(x), [0; 1.57079633]",
             isVisible = true,
             isValid = true,
             id = 1,
