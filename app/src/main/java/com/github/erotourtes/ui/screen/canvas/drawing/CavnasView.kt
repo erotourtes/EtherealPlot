@@ -1,4 +1,4 @@
-package com.github.erotourtes.ui.screen.plot.drawing
+package com.github.erotourtes.ui.screen.canvas.drawing
 
 import android.util.Log
 import androidx.compose.material3.MaterialTheme

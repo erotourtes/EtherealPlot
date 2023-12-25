@@ -4,9 +4,10 @@ import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.github.erotourtes.room.plot.Plot
-import com.github.erotourtes.room.plot.PlotDao
+import com.github.erotourtes.data.plot.Plot
+import com.github.erotourtes.data.plot.PlotRepository
 import com.github.erotourtes.utils.random
 import com.github.erotourtes.utils.toPlotUIState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,7 +36,7 @@ data class PlotUIState(
 }
 
 class PlotViewModel(
-    private val dao: PlotDao,
+    private val plotRepo: PlotRepository
 ) : ViewModel() {
     // Jetpack compose doesn't detect changes if list is modified in place
     private val _plotUIState = MutableStateFlow<List<PlotUIState>>(listOf())
@@ -45,7 +46,7 @@ class PlotViewModel(
         if (_plotUIState.value.isNotEmpty()) return
 
         viewModelScope.launch {
-            _plotUIState.value = dao.getPreviousPlots().map { it.toPlotUIState() }
+            _plotUIState.value = plotRepo.getPreviousPlots().map { it.toPlotUIState() }
             Log.i("PlotViewModel", "loadState in plotViewModel ${_plotUIState.value}")
         }
     }
@@ -53,7 +54,7 @@ class PlotViewModel(
     fun saveStateSync() {
         viewModelScope.launch {
             Log.i("PlotViewModel", "saveState")
-            dao.savePlots(_plotUIState.value.map { it.toPlot() })
+            plotRepo.savePlots(_plotUIState.value.map { it.toPlot() })
         }
     }
 
@@ -61,7 +62,7 @@ class PlotViewModel(
         Log.i("PlotViewModel", "changePlotFormula: $newValue")
         val updated = oldState.copy(function = newValue, isValid = true)
         viewModelScope.launch {
-            dao.savePlot(updated.toPlot())
+            plotRepo.savePlot(updated.toPlot())
         }
 
         _plotUIState.value = _plotUIState.value.toMutableList().apply {
@@ -74,7 +75,7 @@ class PlotViewModel(
         viewModelScope.launch {
             val plot = plotUIState.toPlot()
             Log.i("PlotViewModel", "removePlot: ${plot.function} ${plot.id}")
-            dao.deletePlot(plot)
+            plotRepo.deletePlot(plot)
         }
 
         _plotUIState.value = _plotUIState.value.toMutableList().apply { remove(plotUIState) }
@@ -110,7 +111,7 @@ class PlotViewModel(
                 isVisible = true,
                 isValid = true,
             )
-            val id = dao.savePlot(plot)
+            val id = plotRepo.savePlot(plot)
             Log.i("PlotViewModel", "createNew: $id")
             _plotUIState.update { list ->
                 val updated = list.toMutableList()
@@ -143,6 +144,15 @@ class PlotViewModel(
             val updated = list.toMutableList()
             updated[index] = updated[index].update()
             updated
+        }
+    }
+
+    companion object {
+        fun provideFactory(plotRepo: PlotRepository): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return PlotViewModel(plotRepo) as T
+            }
         }
     }
 }

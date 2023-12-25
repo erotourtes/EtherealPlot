@@ -1,4 +1,4 @@
-package com.github.erotourtes.room.plot
+package com.github.erotourtes.data.plot
 
 import androidx.room.Dao
 import androidx.room.Delete

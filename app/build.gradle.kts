@@ -100,4 +100,6 @@ dependencies {
 
     // To use Kotlin annotation processing tool (kapt)
     ksp("androidx.room:room-compiler:$room_version")
+
+    implementation("androidx.navigation:navigation-compose:2.7.6")
 }

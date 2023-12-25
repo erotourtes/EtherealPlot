@@ -1,10 +1,9 @@
-package com.github.erotourtes.ui.screen.plot.drawing
+package com.github.erotourtes.ui.screen.canvas.drawing
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener

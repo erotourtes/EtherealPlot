@@ -6,7 +6,7 @@ import android.graphics.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.core.graphics.withSave
 import com.github.erotourtes.model.PlotUIState
-import com.github.erotourtes.room.plot.Plot
+import com.github.erotourtes.data.plot.Plot
 import kotlin.random.Random
 
 /**

@@ -1,4 +1,4 @@
-package com.github.erotourtes.ui.screen.plot
+package com.github.erotourtes.ui.screen.canvas
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape

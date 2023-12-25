@@ -1,4 +1,4 @@
-package com.github.erotourtes.room.plot
+package com.github.erotourtes.data.plot
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
