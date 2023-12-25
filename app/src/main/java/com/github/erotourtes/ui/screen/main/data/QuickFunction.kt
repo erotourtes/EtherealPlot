@@ -54,7 +54,7 @@ val quickFunctionList = listOf(
     ),
     QuickFunction(
         name = "Exponential",
-        formula = "e^x",
+        formula = "x^x",
         icon = Icons.Rounded.Search
     )
 )
