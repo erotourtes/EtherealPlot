@@ -107,7 +107,7 @@ class PlotViewModel(
         viewModelScope.launch {
             val plot = Plot(
                 color = color.toArgb(),
-                function =  function,
+                function = function,
                 isVisible = true,
                 isValid = true,
             )
@@ -150,6 +150,14 @@ class PlotViewModel(
     fun restorePreviousSession() {
         viewModelScope.launch {
             _plotUIState.value = plotRepo.getPreviousPlots().map { it.toPlotUIState() }
+            Log.i("PlotViewModel", "restorePreviousSession: ${_plotUIState.value.size}")
+        }
+    }
+
+    fun removeAllPlots() {
+        _plotUIState.value = listOf()
+        viewModelScope.launch {
+            plotRepo.deleteAllPlots()
         }
     }
 

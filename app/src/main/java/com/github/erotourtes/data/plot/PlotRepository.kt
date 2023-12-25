@@ -16,6 +16,10 @@ class PlotRepository(
         plotDao.deletePlot(plot)
     }
 
+    suspend fun deleteAllPlots() {
+        plotDao.deletePlots()
+    }
+
     suspend fun getPreviousPlots(): List<Plot> {
         return plotDao.getPreviousPlots()
     }

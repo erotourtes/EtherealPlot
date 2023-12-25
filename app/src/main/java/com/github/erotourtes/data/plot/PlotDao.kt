@@ -19,4 +19,7 @@ interface PlotDao {
 
     @Query("SELECT * FROM Plot LIMIT 10")
     suspend fun getPreviousPlots(): List<Plot>
+
+    @Query("DELETE FROM Plot")
+    suspend fun deletePlots()
 }

@@ -21,7 +21,10 @@ fun MainScreen(
     plotViewModel: PlotViewModel, navController: NavController
 ) {
     MainLayout(
-        onGoToPlots = { navController.navigate(Screen.CanvasScreen.route) },
+        onGoToPlots = {
+            plotViewModel.removeAllPlots()
+            navController.navigate(Screen.CanvasScreen.route)
+        },
         onGoToPlotsPreviousSession = {
             plotViewModel.restorePreviousSession()
             navController.navigate(Screen.CanvasScreen.route)
