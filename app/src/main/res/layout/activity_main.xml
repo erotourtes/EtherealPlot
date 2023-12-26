@@ -8,7 +8,7 @@
         tools:context=".MainActivity">
 
     <view
-            class="com.github.erotourtes.drawing.DrawableView"
+            class="com.github.erotourtes.ui.screen.canvas.drawing.CanvasViewNativeView"
             android:id="@+id/viewDrawable"
             android:layout_width="0dp"
             android:layout_height="0dp"

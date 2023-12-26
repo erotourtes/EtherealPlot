@@ -3,38 +3,55 @@ package com.github.erotourtes.utils
 import java.lang.IllegalStateException
 import kotlin.math.*
 
+private val binaryOperators = mapOf(
+    "+" to Pair(1) { a: Double, b: Double -> a + b },
+    "-" to Pair(1) { a: Double, b: Double -> a - b },
+    "*" to Pair(2) { a: Double, b: Double -> a * b },
+    "/" to Pair(2) { a: Double, b: Double -> a / b },
+    "^" to Pair(3) { a: Double, b: Double -> a.pow(b) },
+)
+
+private val fnOperators = mapOf(
+    "sin" to Pair(4) { a: Double -> sin(a) },
+    "cos" to Pair(4) { a: Double -> cos(a) },
+    "tan" to Pair(4) { a: Double -> tan(a) },
+    "ln" to Pair(4) { a: Double -> ln(a) },
+    "sqrt" to Pair(4) { a: Double -> sqrt(a) },
+)
+
+private val constants = mapOf(
+    "pi" to PI,
+    "e" to E,
+)
+
+private val brackets = listOf("(", ")")
+
 class MathParser(expression: String) {
-    private val binaryOperators = mapOf(
-        "+" to Pair(1) { a: Double, b: Double -> a + b },
-        "-" to Pair(1) { a: Double, b: Double -> a - b },
-        "*" to Pair(2) { a: Double, b: Double -> a * b },
-        "/" to Pair(2) { a: Double, b: Double -> a / b },
-        "^" to Pair(3) { a: Double, b: Double -> a.pow(b) },
-    )
-
-    private val fnOperators = mapOf(
-        "sin" to Pair(4) { a: Double -> sin(a) },
-        "cos" to Pair(4) { a: Double -> cos(a) },
-        "tan" to Pair(4) { a: Double -> tan(a) },
-        "ln" to Pair(4) { a: Double -> ln(a) },
-        "sqrt" to Pair(4) { a: Double -> sqrt(a) },
-    )
-
-    private val brackets = listOf("(", ")")
+    var boundaries: Pair<Double, Double> = Pair(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY)
+        private set
 
     val rpn = toRpnOrEmpty(expression)
 
     private val variables = mutableMapOf("x" to 0.0)
 
-    fun setVariable(name: String, value: Double) {
+    fun setVariable(name: String, value: Double): MathParser {
         variables[name] = value
+        return this
+    }
+
+    inline fun evalOrNull(block: (Double) -> Double = { it }): Double? {
+        return try {
+            block(eval())
+        } catch (e: IllegalStateException) {
+            null
+        }
     }
 
     fun eval(): Double {
         if (rpn.isEmpty()) throw IllegalStateException("Invalid expression")
         try {
             return _eval()
-        } catch (e: NoSuchElementException) {
+        } catch (e: Exception) {
             throw IllegalStateException("Invalid expression")
         }
     }
@@ -72,7 +89,7 @@ class MathParser(expression: String) {
      * */
     @Throws(NoSuchElementException::class)
     private fun toRPN(exp: String): List<String> {
-        val tokens = tokenize(exp)
+        val tokens = tokenizeWithBoundaries(exp)
 
         val operationStack = mutableListOf<String>()
         val queue = mutableListOf<String>()
@@ -118,6 +135,23 @@ class MathParser(expression: String) {
         operationStack.add(token)
     }
 
+    // TODO: use string builder
+    private fun tokenizeWithBoundaries(expression: String): List<String> {
+        if (!expression.contains(",")) return tokenize(expression)
+
+        val (expressionPart, boundariesPart) = expression.split(",")
+        val (leftBoundary, rightBoundary) = boundariesPart
+            .replace("[", "")
+            .replace("]", "")
+            .split(";")
+            .map { it.trim().toDouble() }
+
+        boundaries = Pair(leftBoundary, rightBoundary)
+
+        return tokenize(expressionPart)
+    }
+
+    // TODO: use string builder
     private fun tokenize(expression: String): List<String> {
         var exp = expression
         // 3+log(2, 3) -> 3 + log (2 , 3)
@@ -128,6 +162,9 @@ class MathParser(expression: String) {
 
         // 3x -> 3 * x
         exp = exp.replace(Regex("(\\d+)([a-zA-Z]+)"), "$1 * $2")
+
+        // constants
+        for (constant in constants.keys) exp = exp.replace(constant, constants[constant].toString())
 
         return exp.split("\\s+".toRegex()).filter { it.isNotBlank() }
     }
