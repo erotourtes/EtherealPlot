@@ -106,4 +106,53 @@ class MathParserTest {
             }
         }
     }
+
+    @Nested
+    @DisplayName("Test boundaries")
+    inner class Boundaries {
+        @Test
+        @DisplayName("simple expression")
+        fun simple() {
+            val parser = MathParser("x + 2")
+            parser.setVariable("x", 3.0)
+            assertEquals("x2+", parser.rpn.joinToString(""))
+            assertEquals(5.0, parser.eval())
+            assertEquals(5.0, parser.evalOrNull()!!)
+        }
+
+        @Test
+        @DisplayName("simple expression")
+        fun simple2() {
+            val parser = MathParser("x + 2, [0; 10]")
+            assertEquals(0.0, parser.boundaries.first)
+            assertEquals(10.0, parser.boundaries.second)
+        }
+
+        @Test
+        @DisplayName("simple expression")
+        fun simple3() {
+            val parser = MathParser("x +sin(x), [-10; 10]")
+            assertEquals(-10.0, parser.boundaries.first)
+            assertEquals(10.0, parser.boundaries.second)
+        }
+    }
+
+    @Nested
+    @DisplayName("Test constants")
+    inner class Constants {
+        @Test
+        @DisplayName("simple expression")
+        fun simple() {
+            val parser = MathParser("pi + e")
+            assertEquals(Math.PI + Math.E, parser.eval())
+        }
+
+        @Test
+        @DisplayName("simple expression")
+        fun simple1() {
+            val parser = MathParser("pi + 3x")
+            parser.setVariable("x", 2.0)
+            assertEquals(Math.PI + 6.0, parser.eval())
+        }
+    }
 }

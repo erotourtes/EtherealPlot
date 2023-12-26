@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
@@ -36,6 +37,8 @@ class CanvasViewNativeView @JvmOverloads constructor(
 
     private var curStepMultiplier = 1f
     private var prevScaleFactor = 1f
+
+    private val mainEvery = 5 // every 5th line is main and has a text
 
     private lateinit var canvas: Canvas
 
@@ -84,6 +87,7 @@ class CanvasViewNativeView @JvmOverloads constructor(
             drawGrid()
             drawAxis()
             drawFns()
+            drawAxesText()
         }
     }
 
@@ -121,8 +125,8 @@ class CanvasViewNativeView @JvmOverloads constructor(
         if (top < bottom) throw IllegalArgumentException("top < bottom")
 
         val step = 1f * curStepMultiplier
-        var xCur = left.toDouble()
-        val xEnd = right.toDouble()
+        var xCur = left.toDouble().coerceAtLeast(fn.boundaries.first * PIXELS_PER_UNIT)
+        val xEnd = right.toDouble().coerceAtMost(fn.boundaries.second * PIXELS_PER_UNIT)
 
         var yCur = fn.evalInPixels(xCur) ?: return false
 
@@ -175,14 +179,30 @@ class CanvasViewNativeView @JvmOverloads constructor(
         return true
     }
 
+
+    private fun drawAxesText() {
+        recalculateGridStep()
+        val (left, top, right, bottom) = canvas.clipBounds
+        val gridStep = 1 * PIXELS_PER_UNIT
+        val gridScale = gridStep * curStepMultiplier
+
+        withYGridStep(top, bottom, gridScale, mainEvery) { y, isMain ->
+            paint.forGrid(isMain) {
+                if (isMain) writeTextYAxis(y, left, right)
+            }
+        }
+
+        // Needs to draw separately because otherwise y grid lines are over the text
+        withXGridStep(left, right, gridScale, mainEvery) { x, isMain ->
+            if (isMain) writeTextXAxis(x, bottom, top) // revere top and bottom because of inverted Y axis
+        }
+    }
+
     private fun drawGrid() {
         recalculateGridStep()
         val (left, top, right, bottom) = canvas.clipBounds
-
         val gridStep = 1 * PIXELS_PER_UNIT
-
         val gridScale = gridStep * curStepMultiplier
-        val mainEvery = 5
 
         withXGridStep(left, right, gridScale, mainEvery) { x, isMain ->
             paint.forGrid(isMain) {
@@ -193,13 +213,7 @@ class CanvasViewNativeView @JvmOverloads constructor(
         withYGridStep(top, bottom, gridScale, mainEvery) { y, isMain ->
             paint.forGrid(isMain) {
                 canvas.drawLine(left.toFloat(), y, right.toFloat(), y, this)
-                if (isMain) writeTextYAxis(y, left, right)
             }
-        }
-
-        // Needs to draw separately because otherwise y grid lines are over the text
-        withXGridStep(left, right, gridScale, mainEvery) { x, isMain ->
-            if (isMain) writeTextXAxis(x, bottom, top) // revere top and bottom because of inverted Y axis
         }
     }
 
